@@ -1,8 +1,10 @@
 #include <stdio.h>
+#include "functions.h"
 
 int main(){
 
-    printf("Bem-Vindo ao Exchange de CriptoMoedas!\n");    
+    printf("\nBem-Vindo ao Exchange de CriptoMoedas!\n");
+    printf("\n");    
 
     return 0;
 }

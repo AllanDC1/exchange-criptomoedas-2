@@ -4,13 +4,16 @@
 #include <stdbool.h>
 
 #define TAM_CPF 12 // 11 dígitos + caracter especial no final
-#define MAX_SENHA 16 // Senha do usuário, no máximo 15 dígitos + caracter especial no final
+#define MAX_SENHA 16 // Máximo 15 dígitos + caracter especial no final
 #define TAM_NOME 21 // Primeiro nome, 20 letras + caracter especial no final
 #define TAM_DATA 9 // 00/00/00 + \0 = 9 caracteres
 #define TAM_SIGLA 5 // 4 letras + \0, BTC ou DOGE por exemplo
 
 #define MAX_TRANSACOES 100
 #define MAX_USUARIOS 10 
+
+typedef enum {DEPOSITO = 1, SAQUE = 2, COMPRA = 3, VENDA = 4} ETipoTransacao;
+typedef enum {OK, FALHA} Resposta;
 
 typedef struct {
     float real;
@@ -42,16 +45,14 @@ typedef struct {
     float cotacao;
 } Moeda;
 
-typedef enum {DEPOSITO = 1, SAQUE = 2, COMPRA = 3, VENDA = 4} ETipoTransacao;
-typedef enum {OK, FALHA} Resposta;
-
 //Declaração de funções
 
-void limpar_buffer(void);
+void limpar_buffer();
+void print_erro(const char *msg);
 Resposta verificar_arquivo(FILE *ponteiro);
 Resposta verificar_cpf(char *entrada_cpf);
-Resposta verificar_senha(char *len_senha);
-Resposta verificar_nome(char *len_nome);
+Resposta verificar_senha(char *entrada_senha);
+Resposta verificar_nome(char *entrada_nome);
 Resposta ler_usuarios(Usuario array_usuarios[], int *quantidade_lida);
 Resposta salvar_usuarios(Usuario array_usuarios[], int quantidade_usuarios);
-void criar_usuario(void);
+void criar_usuario();
