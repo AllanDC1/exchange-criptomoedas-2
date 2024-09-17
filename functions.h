@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdbool.h>
+#include <ctype.h>
 
 #define TAM_CPF 12 // 11 dígitos + caracter especial no final
 #define MAX_SENHA 16 // Máximo 15 dígitos + caracter especial no final
