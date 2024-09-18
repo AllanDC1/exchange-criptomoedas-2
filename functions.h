@@ -1,3 +1,6 @@
+#ifndef FUNCTIONS_H
+#define FUNCTIONS_H
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -57,5 +60,7 @@ Resposta verificar_senha(char *entrada_senha);
 Resposta verificar_nome(char *entrada_nome);
 Resposta ler_usuarios(Usuario array_usuarios[], int *quantidade_lida);
 Resposta salvar_usuarios(Usuario array_usuarios[], int quantidade_usuarios);
-void gerar_data(char* data);
+void gerar_data(char* var_data);
 void criar_usuario();
+
+#endif
