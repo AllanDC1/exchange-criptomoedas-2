@@ -3,6 +3,7 @@
 #include <string.h>
 #include <stdbool.h>
 #include <ctype.h>
+#include <time.h>
 #include "functions.h"
 
 void limpar_buffer() {
@@ -117,6 +118,15 @@ Resposta salvar_usuarios(Usuario array_usuarios[], int quantidade_usuarios) {
     fwrite(array_usuarios, sizeof(Usuario), quantidade_usuarios, fP);
     fclose(fP);
     return OK;
+}
+
+void gerar_data(char* data) {    
+    time_t tempo_data;
+    time(&tempo_data); // gera tempo em segundos
+    
+    struct tm *local = localtime(&tempo_data); // converte para fuso/formato local
+
+    strftime(data, 20, "%d/%m/%Y %H:%M:%S", local); // formatar a data e hora
 }
 
 // TALVEZ TROCAR PARA RESPOSTA (TRATAR ERROS MELHOR)

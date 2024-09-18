@@ -3,11 +3,12 @@
 #include <string.h>
 #include <stdbool.h>
 #include <ctype.h>
+#include <time.h>
 
 #define TAM_CPF 12 // 11 dígitos + caracter especial no final
 #define MAX_SENHA 16 // Máximo 15 dígitos + caracter especial no final
 #define TAM_NOME 21 // Primeiro nome, 20 letras + caracter especial no final
-#define TAM_DATA 9 // 00/00/00 + \0 = 9 caracteres
+#define TAM_DATA 20 // 00/00/0000 00:00:00 + \0 = 20 caracteres
 #define TAM_SIGLA 5 // 4 letras + \0, BTC ou DOGE por exemplo
 
 #define MAX_TRANSACOES 100
@@ -56,4 +57,5 @@ Resposta verificar_senha(char *entrada_senha);
 Resposta verificar_nome(char *entrada_nome);
 Resposta ler_usuarios(Usuario array_usuarios[], int *quantidade_lida);
 Resposta salvar_usuarios(Usuario array_usuarios[], int quantidade_usuarios);
+void gerar_data(char* data);
 void criar_usuario();
