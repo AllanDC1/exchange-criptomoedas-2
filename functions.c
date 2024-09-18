@@ -1,9 +1,3 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <stdbool.h>
-#include <ctype.h>
-#include <time.h>
 #include "functions.h"
 
 void limpar_buffer() {
@@ -120,7 +114,7 @@ Resposta salvar_usuarios(Usuario array_usuarios[], int quantidade_usuarios) {
     return OK;
 }
 
-void gerar_data(char* data) {    
+void gerar_data(char* var_data) {    
     time_t tempo_data;
     time(&tempo_data); // gera tempo em segundos
     
@@ -132,6 +126,7 @@ void gerar_data(char* data) {
 // TALVEZ TROCAR PARA RESPOSTA (TRATAR ERROS MELHOR)
 void criar_usuario() {
 
+    // LER USUÁRIOS E VERIFICAR QUANTIDADE JÁ CRIADOS
     Usuario usuarios[10];
     int qnt_usuarios = 0;
     
@@ -189,8 +184,8 @@ void criar_usuario() {
     novo_usuario.carteira.btc = 0.0;
     novo_usuario.carteira.eth = 0.0;
     novo_usuario.carteira.xrp = 0.0;
-    // CONFERIR SE PRECISARA DECLARAR UMA TRANSACAO PADRAO
     novo_usuario.qnt_transacoes = 0;
+    // CONFERIR SE PRECISARA DECLARAR UMA TRANSACAO PADRAO
 
     qnt_usuarios++;
      
