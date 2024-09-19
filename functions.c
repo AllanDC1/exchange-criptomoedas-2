@@ -65,6 +65,29 @@ Resposta verificar_nome(char *entrada_nome) {
     return OK;
 }
 
+void exibir_menu() {
+    printf("\nBem-Vindo ao Exchange de CriptoMoedas!\n");
+    printf("\n 1. Login\n");
+    printf(" 2. Registrar-se\n");
+    printf(" 3. Excluir conta\n");
+    printf(" 0. Sair\n");
+}
+
+int escolha_menu() {
+    int op;
+    do {
+        printf("\nEscolha a operacao: ");
+        if (scanf("%d", &op) != 1 || (op < 0 || op > 3) ) {
+            print_erro("Operacao invalida, insira novamente.");          
+            limpar_buffer();
+            op = -1; // força o loop
+        }
+    }while (op < 0 || op > 3);
+    printf("\n");
+    
+    return op;
+}
+
 // QUANDO FOR CHAMADA ESSA FUNCAO, FAZER O TRATAMENTO DE ERRO (if (ler_usuarios(usuarios, &qnt_usuarios) == FALHA) {return; // voltar pro menu})
 Resposta ler_usuarios(Usuario array_usuarios[], int *quantidade_lida) {
     FILE *fP = fopen("dados-usuarios", "rb");
@@ -90,12 +113,19 @@ Resposta ler_usuarios(Usuario array_usuarios[], int *quantidade_lida) {
         }
     }
 
-    Usuario usuario_temp;
-    *quantidade_lida = 0;
+    // verificação se o arquivo está vazio
+    fseek(fP, 0, SEEK_END);
+    long tamanho = ftell(fP); 
+    rewind(fP);
 
-    while(fread(&usuario_temp, sizeof(Usuario), 1, fP) != 0) {
-        array_usuarios[*quantidade_lida] = usuario_temp; // pega o indice disponivel no array, e armazena o usuario lido nele
-        (*quantidade_lida)++;
+    if (tamanho != 0) {
+        Usuario usuario_temp;
+        *quantidade_lida = 0;
+
+        while(fread(&usuario_temp, sizeof(Usuario), 1, fP) != 0) {
+            array_usuarios[*quantidade_lida] = usuario_temp; // pega o indice disponivel no array, e armazena o usuario lido nele
+            (*quantidade_lida)++;
+        }
     }
 
     fclose(fP);
@@ -120,7 +150,7 @@ void gerar_data(char* var_data) {
     
     struct tm *local = localtime(&tempo_data); // converte para fuso/formato local
 
-    strftime(data, 20, "%d/%m/%Y %H:%M:%S", local); // formatar a data e hora
+    strftime(var_data, 20, "%d/%m/%Y %H:%M:%S", local); // formatar a data e hora
 }
 
 // TALVEZ TROCAR PARA RESPOSTA (TRATAR ERROS MELHOR)
@@ -163,7 +193,7 @@ void criar_usuario() {
         fgets(entrada_senha, sizeof(entrada_senha), stdin);        
     } while (verificar_senha(entrada_senha) == FALHA);
 
-    int len_senha = strlen(entrada_senha);
+    int len_senha = strlen(entrada_senha) -1; // faz a contagem sem o \n
     strncpy(novo_usuario.senha, entrada_senha, len_senha); // adiciona a senha no novo Usuario, garantindo o tamanho da senha inserida
     novo_usuario.senha[len_senha] = '\0'; // garante o nulo no fim do array
 
@@ -175,7 +205,7 @@ void criar_usuario() {
         fgets(entrada_nome, sizeof(entrada_nome), stdin);         
     } while (verificar_nome(entrada_nome) == FALHA);
 
-    int len_nome = strlen(entrada_nome);
+    int len_nome = strlen(entrada_nome) -1; // faz a contagem sem o \n
     strncpy(novo_usuario.nome, entrada_nome, len_nome); // adiciona a entrada do nome no novo Usuario, garantindo o tamanho do nome inserido
     novo_usuario.nome[len_nome] = '\0'; // garante o nulo no fim do array
 
@@ -187,6 +217,7 @@ void criar_usuario() {
     novo_usuario.qnt_transacoes = 0;
     // CONFERIR SE PRECISARA DECLARAR UMA TRANSACAO PADRAO
 
+    usuarios[qnt_usuarios] = novo_usuario;
     qnt_usuarios++;
      
     if (salvar_usuarios(usuarios, qnt_usuarios) == FALHA) {

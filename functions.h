@@ -54,10 +54,14 @@ typedef struct {
 
 void limpar_buffer();
 void print_erro(const char *msg);
+
 Resposta verificar_arquivo(FILE *ponteiro);
 Resposta verificar_cpf(char *entrada_cpf);
 Resposta verificar_senha(char *entrada_senha);
 Resposta verificar_nome(char *entrada_nome);
+
+void exibir_menu();
+int escolha_menu();
 Resposta ler_usuarios(Usuario array_usuarios[], int *quantidade_lida);
 Resposta salvar_usuarios(Usuario array_usuarios[], int quantidade_usuarios);
 void gerar_data(char* var_data);
