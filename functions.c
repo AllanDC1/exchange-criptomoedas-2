@@ -45,7 +45,7 @@ Resposta verificar_senha(char* entrada_senha) {
     if (len_senha < 7 || len_senha > 16) {
         if (entrada_senha[len_senha -1] != '\n')
             limpar_buffer();
-        print_erro("A senha deve possuir no minimo 6 e no maximo 15 caracteres, insira uma senha valida.");
+        print_erro("Senha invalida, insira novamente.");
         return FALHA;
     }
     
@@ -63,6 +63,23 @@ Resposta verificar_nome(char *entrada_nome) {
     }
     
     return OK;
+}
+
+int checar_usuario(char *entrada_cpf, char* entrada_senha, Usuario array_usuarios[], int quantidade_usuarios) {
+    
+    if (verificar_cpf(entrada_cpf) || verificar_senha(entrada_senha)) {
+        return FALHA;
+    }
+    
+    for (int i = 0; i < quantidade_usuarios; i++) {
+        if (strcmp(entrada_cpf, array_usuarios[i].cpf) == 0) {
+            if (strcmp(entrada_senha, array_usuarios[i].senha) == 0) {
+                return i;
+            }
+        }
+        print_erro("Credenciais incorretas. Insira novamente");
+        return FALHA;
+    }
 }
 
 void exibir_menu() {
@@ -88,7 +105,6 @@ int escolha_menu() {
     return op;
 }
 
-// QUANDO FOR CHAMADA ESSA FUNCAO, FAZER O TRATAMENTO DE ERRO (if (ler_usuarios(usuarios, &qnt_usuarios) == FALHA) {return; // voltar pro menu})
 Resposta ler_usuarios(Usuario array_usuarios[], int *quantidade_lida) {
     FILE *fP = fopen("dados-usuarios", "rb");
 
@@ -153,7 +169,35 @@ void gerar_data(char* var_data) {
     strftime(var_data, 20, "%d/%m/%Y %H:%M:%S", local); // formatar a data e hora
 }
 
-// TALVEZ TROCAR PARA RESPOSTA (TRATAR ERROS MELHOR)
+ResultadoLogin login_usuario() {
+    Usuario nulo;
+    ResultadoLogin retorno = { .usuario_atual = nulo, .resultado = FALHA};
+    Usuario usuarios[10];    
+    int qnt_usuarios = 0, idx;
+    char entrada_cpf[14], entrada_senha[18];
+
+    if (ler_usuarios(usuarios, &qnt_usuarios) == FALHA) {
+        print_erro("Erro ao ler dados dos usuarios. Cancelando operacao...");
+        return retorno; // voltar pro menu
+    }
+
+    printf("Faca seu login:\n");
+    
+    do{
+        printf("\nCPF: ");
+        printf("\nSenha: ");
+        fgets(entrada_cpf, sizeof(entrada_cpf), stdin);
+        fgets(entrada_senha, sizeof(entrada_senha), stdin);
+        
+        idx = checar_usuario(entrada_cpf, entrada_senha, usuarios, qnt_usuarios);
+    }while(idx == FALHA);
+  
+    retorno.resultado = OK;
+    retorno.usuario_atual = usuarios[idx];
+    printf("Login feito com sucesso!\n");
+    return retorno;
+}
+
 void criar_usuario() {
 
     // LER USUÁRIOS E VERIFICAR QUANTIDADE JÁ CRIADOS
@@ -165,12 +209,14 @@ void criar_usuario() {
         return; // voltar pro menu
     }
     
-    if (qnt_usuarios >= MAX_USUARIOS) { // TALVEZ TRATAR ERROS MELHOR
+    if (qnt_usuarios >= MAX_USUARIOS) {
         print_erro("Quantidade de usuarios criados atingiu o limite. Cancelando operacao...");
         return; // voltar pro menu
     }
 
-    Usuario novo_usuario;
+    // DEFININDO DADOS PADRÕES 
+    Usuario novo_usuario = { .carteira = { .real = 0.0, .btc = 0.0, .eth = 0.0, .xrp = 0.0 }, .qnt_transacoes = 0};
+    // CONFERIR SE PRECISARA DECLARAR UMA TRANSACAO PADRAO
 
     // CRIAÇÃO CPF
     char entrada_cpf[14]; // buffer para conferir tamanho
@@ -189,7 +235,7 @@ void criar_usuario() {
     char entrada_senha[18]; // buffer para conferir tamanho
 
     do {
-        printf("\nInsira a senha (de 6 a 15 caracteres): ");
+        printf("\nCrie uma senha (de 6 a 15 caracteres): ");
         fgets(entrada_senha, sizeof(entrada_senha), stdin);        
     } while (verificar_senha(entrada_senha) == FALHA);
 
@@ -209,14 +255,6 @@ void criar_usuario() {
     strncpy(novo_usuario.nome, entrada_nome, len_nome); // adiciona a entrada do nome no novo Usuario, garantindo o tamanho do nome inserido
     novo_usuario.nome[len_nome] = '\0'; // garante o nulo no fim do array
 
-    // DEFININDO DADOS PADRÕES    
-    novo_usuario.carteira.real = 0.0;
-    novo_usuario.carteira.btc = 0.0;
-    novo_usuario.carteira.eth = 0.0;
-    novo_usuario.carteira.xrp = 0.0;
-    novo_usuario.qnt_transacoes = 0;
-    // CONFERIR SE PRECISARA DECLARAR UMA TRANSACAO PADRAO
-
     usuarios[qnt_usuarios] = novo_usuario;
     qnt_usuarios++;
      
@@ -226,4 +264,5 @@ void criar_usuario() {
     }
 
     printf("\nUsuario criado com sucesso!\n");
+    printf("Voltando ao menu...\n");
 }

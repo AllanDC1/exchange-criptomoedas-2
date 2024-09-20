@@ -2,6 +2,7 @@
 #include "functions.h"
 
 int main(){
+    Usuario user_atual;
     int operacao;
 
     do {
@@ -10,7 +11,11 @@ int main(){
 
         switch (operacao) {
             case 1:
-                // login();
+                ResultadoLogin login = login_usuario();
+                if (login.resultado == OK) {
+                    user_atual = login.usuario_atual;
+                    //escolha_operacoes(user_atual);
+                }
                 break;
             case 2:
                 criar_usuario();

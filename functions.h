@@ -18,7 +18,7 @@
 #define MAX_USUARIOS 10 
 
 typedef enum {DEPOSITO = 1, SAQUE = 2, COMPRA = 3, VENDA = 4} ETipoTransacao;
-typedef enum {OK, FALHA} Resposta;
+typedef enum {OK, FALHA = -1} Resposta;
 
 typedef struct {
     float real;
@@ -50,6 +50,11 @@ typedef struct {
     float cotacao;
 } Moeda;
 
+typedef struct {
+    Usuario usuario_atual;
+    Resposta resultado;
+} ResultadoLogin;
+
 //Declaração de funções
 
 void limpar_buffer();
@@ -65,6 +70,8 @@ int escolha_menu();
 Resposta ler_usuarios(Usuario array_usuarios[], int *quantidade_lida);
 Resposta salvar_usuarios(Usuario array_usuarios[], int quantidade_usuarios);
 void gerar_data(char* var_data);
+
+ResultadoLogin login_usuario();
 void criar_usuario();
 
 #endif
