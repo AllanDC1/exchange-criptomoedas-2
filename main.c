@@ -1,5 +1,4 @@
 #include <stdio.h>
-#include <windows.h>
 #include "functions.h"
 
 int main(){
@@ -9,21 +8,22 @@ int main(){
 
     do {
         exibir_menu();
-        operacao = escolha_menu();
+        operacao = escolha_operacao(3);
 
         switch (operacao) {
             case 1:
                 login = login_usuario();
                 if (login.resultado == OK) {
                     user_atual = login.usuario_atual;
-                    printf("Login feito com sucesso!\n");
-                    printf("Bem vindo %s!\n", user_atual.nome);
-                    Sleep(1500);
-                    //escolha_operacoes(user_atual);
+                    printf("Login feito com sucesso!\n");                    
+                    menu_operacoes(user_atual);
                 }
+                Sleep(1500);
                 break;
             case 2:
-                criar_usuario();
+                if (criar_usuario() == OK) {
+                    printf("\nUsuario criado com sucesso! Voltando ao menu...\n");
+                }
                 Sleep(1500);
                 break;
             case 3:

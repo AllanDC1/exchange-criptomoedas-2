@@ -7,6 +7,7 @@
 #include <stdbool.h>
 #include <ctype.h>
 #include <time.h>
+#include <windows.h>
 
 #define TAM_CPF 12 // 11 dígitos + caracter especial no final
 #define MAX_SENHA 16 // Máximo 15 dígitos + caracter especial no final
@@ -61,19 +62,22 @@ void limpar_buffer();
 void print_erro(const char *msg);
 
 void verificar_buffer();
+Resposta verificar_tamanho_arquivo(FILE *ponteiro);
 Resposta verificar_arquivo(FILE *ponteiro);
 Resposta verificar_cpf(char *entrada_cpf);
 Resposta verificar_senha(char *entrada_senha);
 Resposta verificar_nome(char *entrada_nome);
 
 void exibir_menu();
-int escolha_menu();
-Resposta ler_usuarios(Usuario array_usuarios[], int *quantidade_lida);
+int escolha_operacao(int max);
+void ler_usuarios(Usuario array_usuarios[], int *quantidade_lida);
 Resposta salvar_usuarios(Usuario array_usuarios[], int quantidade_usuarios);
 void gerar_data(char* var_data);
 
 ResultadoLogin login_usuario();
-void criar_usuario();
+Resposta criar_usuario();
 Resposta excluir_usuario();
+
+void menu_operacoes(Usuario usuario_logado);
 
 #endif

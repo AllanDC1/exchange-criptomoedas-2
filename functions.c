@@ -16,9 +16,20 @@ void verificar_buffer(char *entrada) {
     entrada[strcspn(entrada, "\n")] = 0;    
 }
 
+Resposta verificar_tamanho_arquivo(FILE *ponteiro) {
+    fseek(ponteiro, 0, SEEK_END);
+    long tamanho = ftell(ponteiro); 
+    rewind(ponteiro);
+
+    if (tamanho == 0) {
+        return FALHA;
+    }else {
+        return OK;
+    }
+}
+
 Resposta verificar_arquivo(FILE *ponteiro) {    
-    if (ponteiro == NULL) {    
-        print_erro("Erro ao acessar arquivo, possivelmente ele nao existe.");    
+    if (ponteiro == NULL) {            
         return FALHA;
     }
     else
@@ -83,74 +94,65 @@ int checar_usuario(char *entrada_cpf, char* entrada_senha, Usuario array_usuario
 
 void exibir_menu() {
     printf("\nBem-Vindo ao Exchange de CriptoMoedas!\n");
-    printf("\n 1. Login\n");
-    printf(" 2. Registrar-se\n");
-    printf(" 3. Excluir conta\n");
-    printf(" 0. Sair\n");
+    printf("\n1. Login\n");
+    printf("2. Registrar-se\n");
+    printf("3. Excluir conta\n");
+    printf("0. Sair\n");
 }
 
-int escolha_menu() {
+void exibir_operacoes() {
+    printf("\nOperacoes disponiveis:\n");
+    printf("\n1. Consultar saldo\n");
+    printf("2. Consultar extrato\n");
+    printf("3. Depositar\n");
+    printf("4. Sacar\n");
+    printf("5. Comprar criptomoedas\n");
+    printf("6. Vender criptomoedas\n");
+    printf("7. Atualizar cotacao das criptomoedas\n");
+    printf("0. Sair\n");
+}
+
+int escolha_operacao(int max) {
     int op;
     do {
         printf("\nEscolha a operacao: ");
-        if (scanf("%d", &op) != 1 || (op < 0 || op > 3) ) {
+        if (scanf("%d", &op) != 1 || (op < 0 || op > max) ) {
             print_erro("Operacao invalida, insira novamente.");
             op = -1; // força o loop
         }
         limpar_buffer();
-    }while (op < 0 || op > 3);
+    }while (op < 0 || op > max);
     printf("\n");
     
     return op;
 }
 
-Resposta ler_usuarios(Usuario array_usuarios[], int *quantidade_lida) {
+void ler_usuarios(Usuario array_usuarios[], int *quantidade_lida) {
     FILE *fP = fopen("dados-usuarios", "rb");
+    Usuario usuario_temp;
+    *quantidade_lida = 0;
 
     if (verificar_arquivo(fP) == FALHA) {
-        // CRIAR O ARQUIVO PELA PRIMEIRA VEZ
-        int op;
-        do {
-            printf("\nDigite 1 se deseja criar o arquivo. (Se for a primeira vez executando o programa)\n");
-            printf("Digite 2 para relatar a falha e cancelar a execucao. (Possivel falha no arquivo)\n");        
-            scanf("%d", &op);
-            limpar_buffer();
-        }while (op != 1 && op != 2);
-
-        if (op == 1){
-            FILE *arquivo = fopen("dados-usuarios", "wb");
-            fclose(arquivo);
-            printf("Arquivo criado.\n");
-            printf("\n");
-        }
-        else if (op == 2) {
-            return FALHA;
-        }
+        // CRIAR O ARQUIVO PELA PRIMEIRA VEZ 
+        FILE *arquivo = fopen("dados-usuarios", "wb");
+        fclose(arquivo); 
     }
 
-    // verificação se o arquivo está vazio
-    fseek(fP, 0, SEEK_END);
-    long tamanho = ftell(fP); 
-    rewind(fP);
-
-    if (tamanho != 0) {
-        Usuario usuario_temp;
-        *quantidade_lida = 0;
-
-        while(fread(&usuario_temp, sizeof(Usuario), 1, fP) != 0) {
+    if (verificar_tamanho_arquivo(fP) == OK) {
+            while(fread(&usuario_temp, sizeof(Usuario), 1, fP) != 0) {
             array_usuarios[*quantidade_lida] = usuario_temp; // pega o indice disponivel no array, e armazena o usuario lido nele
             (*quantidade_lida)++;
         }
     }
 
     fclose(fP);
-    return OK;
 }
 
 Resposta salvar_usuarios(Usuario array_usuarios[], int quantidade_usuarios) {
     FILE *fP = fopen("dados-usuarios", "wb");
 
-    if (verificar_arquivo(fP) == FALHA) {               
+    if (verificar_arquivo(fP) == FALHA) {
+        print_erro("Erro ao acessar arquivo.");             
         return FALHA;
     }
 
@@ -169,15 +171,16 @@ void gerar_data(char* var_data) {
 }
 
 ResultadoLogin login_usuario() {
-    Usuario nulo;
+    Usuario usuarios[10], nulo;
     ResultadoLogin retorno = { .usuario_atual = nulo, .resultado = FALHA};
-    Usuario usuarios[10];    
     int qnt_usuarios = 0, idx;
     char entrada_cpf[14], entrada_senha[18];
 
-    if (ler_usuarios(usuarios, &qnt_usuarios) == FALHA) {
-        print_erro("Erro ao ler dados dos usuarios. Cancelando operacao...");
-        return retorno; // voltar pro menu
+    ler_usuarios(usuarios, &qnt_usuarios);
+
+    if (qnt_usuarios <= 0) {
+        print_erro("A plataforma ainda nao possui nenhum usuario.");
+        return retorno;
     }
 
     printf("Faca seu login:\n");
@@ -200,25 +203,19 @@ ResultadoLogin login_usuario() {
     return retorno;
 }
 
-void criar_usuario() {
-
-    // LER USUÁRIOS E VERIFICAR QUANTIDADE JÁ CRIADOS
+Resposta criar_usuario() {
     Usuario usuarios[10];
     int qnt_usuarios = 0;
     char entrada_cpf[14], entrada_senha[18], entrada_nome[23]; // buffer para conferir tamanho
     
-    if (ler_usuarios(usuarios, &qnt_usuarios) == FALHA) {
-        print_erro("Erro ao ler dados dos usuarios. Cancelando operacao...");
-        return; // voltar pro menu
-    }
+    ler_usuarios(usuarios, &qnt_usuarios);
     
     if (qnt_usuarios >= MAX_USUARIOS) {
         print_erro("Quantidade de usuarios criados atingiu o limite. Cancelando operacao...");
-        return; // voltar pro menu
+        return FALHA; // voltar pro menu
     }
 
-    // DEFININDO DADOS PADRÕES 
-    Usuario novo_usuario = { .carteira = { .real = 0.0, .btc = 0.0, .eth = 0.0, .xrp = 0.0 }, .qnt_transacoes = 0};
+    Usuario novo_usuario = { .carteira = { .real = 0.0, .btc = 0.0, .eth = 0.0, .xrp = 0.0 }, .qnt_transacoes = 0}; // cria novo usuario e define dados padroes
     // CONFERIR SE PRECISARA DECLARAR UMA TRANSACAO PADRAO
 
     printf("Crie sua conta:\n");
@@ -257,11 +254,10 @@ void criar_usuario() {
      
     if (salvar_usuarios(usuarios, qnt_usuarios) == FALHA) {
         print_erro("Erro ao salvar os dados do usuario. Cancelando operacao...");
-        return; // voltar pro menu
+        return FALHA; // voltar pro menu
     }
 
-    printf("\nUsuario criado com sucesso!\n");
-    printf("Voltando ao menu...\n");
+    return OK;
 }
 
 Resposta excluir_usuario() {
@@ -269,9 +265,11 @@ Resposta excluir_usuario() {
     int confirmacao, qnt_usuarios = 0, excluir_idx = FALHA;
     char entrada_cpf[14];
     
-    if (ler_usuarios(usuarios, &qnt_usuarios) == FALHA) {
-        print_erro("Erro ao ler dados dos usuarios. Cancelando operacao...");
-        return FALHA; // voltar pro menu
+    ler_usuarios(usuarios, &qnt_usuarios);
+
+    if (qnt_usuarios <= 0) {
+        print_erro("A plataforma ainda nao possui nenhum usuario.");
+        return FALHA;
     }
 
     do{
@@ -317,4 +315,44 @@ Resposta excluir_usuario() {
         print_erro("Exclusao de conta cancelada. Voltando ao menu...");
         return FALHA;
     }
+}
+
+void menu_operacoes(Usuario usuario_logado) {
+    int operacao;
+
+    printf("Bem vindo %s!\n", usuario_logado.nome);
+
+    do {
+        Sleep(1000);
+        exibir_operacoes();
+        operacao = escolha_operacao(7);
+
+        switch (operacao) {
+        case 1:
+            // consultar_saldo();
+            break;
+        case 2:
+            // consultar_extrato();
+            break;
+        case 3:
+            // depositar();
+            break;
+        case 4:
+            // sacar();
+            break;
+        case 5:
+            // comprar_criptos();
+            break;
+        case 6:
+            // vender_criptos();
+            break;
+        case 7:
+            // atualizar_cotacao();
+            break;
+        case 0:
+            printf("Voltando ao menu...\n");
+            break;
+        }
+
+    }while (operacao != 0);
 }
