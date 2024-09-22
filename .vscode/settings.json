@@ -4,6 +4,8 @@
         "stdlib.h": "c",
         "string.h": "c",
         "stdbool.h": "c",
-        "ctype.h": "c"
+        "ctype.h": "c",
+        "functions.h": "c",
+        "windows.h": "c"
     }
 }

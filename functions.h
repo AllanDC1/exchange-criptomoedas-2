@@ -7,6 +7,7 @@
 #include <stdbool.h>
 #include <ctype.h>
 #include <time.h>
+#include <windows.h>
 
 #define TAM_CPF 12 // 11 dígitos + caracter especial no final
 #define MAX_SENHA 16 // Máximo 15 dígitos + caracter especial no final
@@ -18,7 +19,7 @@
 #define MAX_USUARIOS 10 
 
 typedef enum {DEPOSITO = 1, SAQUE = 2, COMPRA = 3, VENDA = 4} ETipoTransacao;
-typedef enum {OK, FALHA} Resposta;
+typedef enum {OK, FALHA = -1} Resposta;
 
 typedef struct {
     float real;
@@ -50,17 +51,33 @@ typedef struct {
     float cotacao;
 } Moeda;
 
+typedef struct {
+    Usuario usuario_atual;
+    Resposta resultado;
+} ResultadoLogin;
+
 //Declaração de funções
 
 void limpar_buffer();
 void print_erro(const char *msg);
+
+void verificar_buffer();
+Resposta verificar_tamanho_arquivo(FILE *ponteiro);
 Resposta verificar_arquivo(FILE *ponteiro);
 Resposta verificar_cpf(char *entrada_cpf);
 Resposta verificar_senha(char *entrada_senha);
 Resposta verificar_nome(char *entrada_nome);
-Resposta ler_usuarios(Usuario array_usuarios[], int *quantidade_lida);
+
+void exibir_menu();
+int escolha_operacao(int max);
+void ler_usuarios(Usuario array_usuarios[], int *quantidade_lida);
 Resposta salvar_usuarios(Usuario array_usuarios[], int quantidade_usuarios);
 void gerar_data(char* var_data);
-void criar_usuario();
+
+ResultadoLogin login_usuario();
+Resposta criar_usuario();
+Resposta excluir_usuario();
+
+void menu_operacoes(Usuario usuario_logado);
 
 #endif
