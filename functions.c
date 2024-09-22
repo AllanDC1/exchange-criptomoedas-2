@@ -9,6 +9,13 @@ void print_erro(const char *msg) {
     printf("\033[0;31m %s \033[0m\n", msg);
 }
 
+void verificar_buffer(char *entrada) {
+    if (entrada[strlen(entrada) -1] != '\n') {
+        limpar_buffer();
+    }
+    entrada[strcspn(entrada, "\n")] = 0;    
+}
+
 Resposta verificar_arquivo(FILE *ponteiro) {    
     if (ponteiro == NULL) {    
         print_erro("Erro ao acessar arquivo, possivelmente ele nao existe.");    
@@ -20,11 +27,9 @@ Resposta verificar_arquivo(FILE *ponteiro) {
 
 Resposta verificar_cpf(char *entrada_cpf) {
     int len_cpf = strlen(entrada_cpf);
+    verificar_buffer(entrada_cpf);
     
-    if (len_cpf != TAM_CPF) { // strlen() retorna a quantidade sem o \0, porém com o \n
-        if (entrada_cpf[len_cpf -1] != '\n'){
-            limpar_buffer();
-        }
+    if (len_cpf != TAM_CPF) { // strlen() retorna a quantidade sem o \0, porém com o \n        
         print_erro("O CPF deve possuir 11 digitos, insira um CPF valido.");
         return FALHA;
     }
@@ -40,11 +45,10 @@ Resposta verificar_cpf(char *entrada_cpf) {
 }
 
 Resposta verificar_senha(char* entrada_senha) {
-    int len_senha = strlen(entrada_senha);    
+    int len_senha = strlen(entrada_senha);  
+    verificar_buffer(entrada_senha);
     
-    if (len_senha < 7 || len_senha > 16) {
-        if (entrada_senha[len_senha -1] != '\n')
-            limpar_buffer();
+    if (len_senha < 7 || len_senha > 16) {        
         print_erro("Senha invalida, insira novamente.");
         return FALHA;
     }
@@ -53,11 +57,10 @@ Resposta verificar_senha(char* entrada_senha) {
 }
 
 Resposta verificar_nome(char *entrada_nome) {
+    verificar_buffer(entrada_nome);
     int len_nome = strlen(entrada_nome);
     
-    if (len_nome < 4 || len_nome > TAM_NOME) {
-        if (entrada_nome[len_nome -1] != '\n')
-            limpar_buffer();  
+    if (len_nome < 4 || len_nome > TAM_NOME) {         
         print_erro("Tamanho do nome deve ser entre 3 a 20 letras, insira um nome valido.");
         return FALHA;
     }
@@ -65,21 +68,17 @@ Resposta verificar_nome(char *entrada_nome) {
     return OK;
 }
 
-int checar_usuario(char *entrada_cpf, char* entrada_senha, Usuario array_usuarios[], int quantidade_usuarios) {
-    
-    if (verificar_cpf(entrada_cpf) || verificar_senha(entrada_senha)) {
-        return FALHA;
-    }
-    
+int checar_usuario(char *entrada_cpf, char* entrada_senha, Usuario array_usuarios[], int quantidade_usuarios) {    
+
     for (int i = 0; i < quantidade_usuarios; i++) {
         if (strcmp(entrada_cpf, array_usuarios[i].cpf) == 0) {
             if (strcmp(entrada_senha, array_usuarios[i].senha) == 0) {
                 return i;
             }
         }
-        print_erro("Credenciais incorretas. Insira novamente");
-        return FALHA;
     }
+    print_erro("Credenciais incorretas. Insira novamente");
+    return FALHA;
 }
 
 void exibir_menu() {
@@ -95,10 +94,10 @@ int escolha_menu() {
     do {
         printf("\nEscolha a operacao: ");
         if (scanf("%d", &op) != 1 || (op < 0 || op > 3) ) {
-            print_erro("Operacao invalida, insira novamente.");          
-            limpar_buffer();
+            print_erro("Operacao invalida, insira novamente.");
             op = -1; // força o loop
         }
+        limpar_buffer();
     }while (op < 0 || op > 3);
     printf("\n");
     
@@ -185,16 +184,19 @@ ResultadoLogin login_usuario() {
     
     do{
         printf("\nCPF: ");
-        printf("\nSenha: ");
         fgets(entrada_cpf, sizeof(entrada_cpf), stdin);
+        verificar_buffer(entrada_cpf);
+        printf("Senha: ");
         fgets(entrada_senha, sizeof(entrada_senha), stdin);
+        verificar_buffer(entrada_senha);
+        printf("\n");
         
         idx = checar_usuario(entrada_cpf, entrada_senha, usuarios, qnt_usuarios);
     }while(idx == FALHA);
   
     retorno.resultado = OK;
     retorno.usuario_atual = usuarios[idx];
-    printf("Login feito com sucesso!\n");
+    
     return retorno;
 }
 
@@ -203,6 +205,7 @@ void criar_usuario() {
     // LER USUÁRIOS E VERIFICAR QUANTIDADE JÁ CRIADOS
     Usuario usuarios[10];
     int qnt_usuarios = 0;
+    char entrada_cpf[14], entrada_senha[18], entrada_nome[23]; // buffer para conferir tamanho
     
     if (ler_usuarios(usuarios, &qnt_usuarios) == FALHA) {
         print_erro("Erro ao ler dados dos usuarios. Cancelando operacao...");
@@ -218,11 +221,9 @@ void criar_usuario() {
     Usuario novo_usuario = { .carteira = { .real = 0.0, .btc = 0.0, .eth = 0.0, .xrp = 0.0 }, .qnt_transacoes = 0};
     // CONFERIR SE PRECISARA DECLARAR UMA TRANSACAO PADRAO
 
-    // CRIAÇÃO CPF
-    char entrada_cpf[14]; // buffer para conferir tamanho
-
     printf("Crie sua conta:\n");
 
+    // CRIAÇÃO CPF
     do {
         printf("\nInforme seu CPF (apenas numeros): ");
         fgets(entrada_cpf, sizeof(entrada_cpf), stdin);               
@@ -232,26 +233,22 @@ void criar_usuario() {
     novo_usuario.cpf[11] = '\0'; // garante o nulo no fim do array
 
     // CRIAÇÃO SENHA
-    char entrada_senha[18]; // buffer para conferir tamanho
-
     do {
         printf("\nCrie uma senha (de 6 a 15 caracteres): ");
         fgets(entrada_senha, sizeof(entrada_senha), stdin);        
     } while (verificar_senha(entrada_senha) == FALHA);
 
-    int len_senha = strlen(entrada_senha) -1; // faz a contagem sem o \n
+    int len_senha = strlen(entrada_senha);
     strncpy(novo_usuario.senha, entrada_senha, len_senha); // adiciona a senha no novo Usuario, garantindo o tamanho da senha inserida
     novo_usuario.senha[len_senha] = '\0'; // garante o nulo no fim do array
 
     // CRIAÇÃO NOME
-    char entrada_nome[23]; // buffer para conferir tamanho
-
     do {
         printf("\nInforme seu primeiro nome: ");
         fgets(entrada_nome, sizeof(entrada_nome), stdin);         
     } while (verificar_nome(entrada_nome) == FALHA);
 
-    int len_nome = strlen(entrada_nome) -1; // faz a contagem sem o \n
+    int len_nome = strlen(entrada_nome);
     strncpy(novo_usuario.nome, entrada_nome, len_nome); // adiciona a entrada do nome no novo Usuario, garantindo o tamanho do nome inserido
     novo_usuario.nome[len_nome] = '\0'; // garante o nulo no fim do array
 
@@ -265,4 +262,59 @@ void criar_usuario() {
 
     printf("\nUsuario criado com sucesso!\n");
     printf("Voltando ao menu...\n");
+}
+
+Resposta excluir_usuario() {
+    Usuario usuarios[10];
+    int confirmacao, qnt_usuarios = 0, excluir_idx = FALHA;
+    char entrada_cpf[14];
+    
+    if (ler_usuarios(usuarios, &qnt_usuarios) == FALHA) {
+        print_erro("Erro ao ler dados dos usuarios. Cancelando operacao...");
+        return FALHA; // voltar pro menu
+    }
+
+    do{
+        printf("Insira o CPF da conta que sera excluida: ");
+        fgets(entrada_cpf, sizeof(entrada_cpf), stdin);
+        verificar_buffer(entrada_cpf);        
+
+        for (int i = 0; i < qnt_usuarios; i++) {
+            if (strcmp(entrada_cpf, usuarios[i].cpf) == 0) {
+                excluir_idx = i;
+                break;
+            }
+        }
+
+        if (excluir_idx == FALHA) {
+            print_erro("Usuario nao encontrado. Insira novamente.");
+            printf("\n");
+        }        
+    }while (excluir_idx == FALHA);
+
+    do{
+        printf("\nDeseja realmente excluir a conta de %s?\n", usuarios[excluir_idx].nome);
+        printf("1(Sim) ou 2(Nao): ");
+        if (scanf("%d", &confirmacao) != 1 || confirmacao != 1 && confirmacao != 2) {
+            print_erro("Escolha invalida.");
+            confirmacao = FALHA;
+        }
+        limpar_buffer();
+    }while (confirmacao == FALHA);
+
+    if (confirmacao == 1) {
+        for (int i = excluir_idx; i < qnt_usuarios - 1; i++) {
+            usuarios[i] = usuarios[i + 1];
+        }
+        qnt_usuarios--;
+
+        if (salvar_usuarios(usuarios, qnt_usuarios) == FALHA) {
+            print_erro("Erro ao salvar os dados do usuario. Cancelando operacao...");
+            return FALHA; // voltar pro menu
+        }
+        return OK;
+    }else {
+        print_erro("Exclusao de conta cancelada. Voltando ao menu...");
+        return FALHA;
+    }
 }

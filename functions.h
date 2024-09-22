@@ -60,6 +60,7 @@ typedef struct {
 void limpar_buffer();
 void print_erro(const char *msg);
 
+void verificar_buffer();
 Resposta verificar_arquivo(FILE *ponteiro);
 Resposta verificar_cpf(char *entrada_cpf);
 Resposta verificar_senha(char *entrada_senha);
@@ -73,5 +74,6 @@ void gerar_data(char* var_data);
 
 ResultadoLogin login_usuario();
 void criar_usuario();
+Resposta excluir_usuario();
 
 #endif
