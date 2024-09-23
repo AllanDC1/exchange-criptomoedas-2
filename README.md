@@ -20,10 +20,24 @@ Além de um sistema de registro, login e exclusão de usuários.
 7. Atualizar cotação | A cotação de todas as criptomoedas são atualizadas com uma variação de no mínimo -5% e no máximo 5% do valor atual.
 0. Sair | Volta para o menu inicial.
 ## Estrutura
-'main.c': Arquivo que contém a lógica de execução do programa.
-'functions.c': Arquivo que possui todas as funções executadas pelo programa.
-'functions.h': Arquivo de cabeçalho onde são declaradas as funções, structs/enums e bibliotecas usadas pelos arquivos '.c'.
-'dados-usuarios': Arquivo em binário são salvos os dados, saldos e transações dos usuários.
-'moedas': Arquivo em binário com taxas de compra e venda e cotação das criptomoedas.
-'exchange-criptomoedas.exe': Arquivo que faz a execução do programa.
+- `main.c:` Arquivo que contém a lógica de execução do programa. <br>
+- `functions.c:` Arquivo que possui todas as funções executadas pelo programa. <br>
+- `functions.h:` Arquivo de cabeçalho onde são declaradas as funções, structs/enums e bibliotecas usadas pelos arquivos `.c`. <br>
+- `dados-usuarios:` Arquivo em binário onde são salvos os dados, saldos e transações dos usuários. <br>
+- `moedas:` Arquivo em binário com taxas de compra e venda e cotação das criptomoedas. <br>
+- `exchange-criptomoedas.exe:` Arquivo que faz a execução do programa.
 ## Compilação e Execução
+*É necessário a instalação do [GCC](https://gcc.gnu.org/) no seu dispositivo para fazer a compilação.* <br>
+
+Com o GCC instalado, copie e cole essa linha no seu terminal: <br>
+`gcc *.c -o exchange-criptomoedas`
+
+Agora que o executável foi criado, cole essa linha no terminal para executá-lo: <br>
+`./exchange-criptomoedas`
+
+## Guia de uso
+Com o sistema executando no seu terminal, basta seguir as indicações que seram exibidas, começando no registro, seguido pelo login, assim você terá acesso ao menu principal de operações onde todas serão listadas para serem executadas de acordo com o número indicado.
+
+### Integrantes
+- Allan Donetti Calen R.A.: 22.124.002-1
+- Luca Munhoz Rossi R.A.: 22.124.003-9
