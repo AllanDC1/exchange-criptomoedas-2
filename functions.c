@@ -5,15 +5,38 @@ void limpar_buffer() {
     while ((c = getchar()) != '\n' && c != EOF) { }
 }
 
-void print_erro(const char *msg) {
-    printf("\033[0;31m %s \033[0m\n", msg);
-}
-
 void verificar_buffer(char *entrada) {
     if (entrada[strlen(entrada) -1] != '\n') {
         limpar_buffer();
     }
     entrada[strcspn(entrada, "\n")] = 0;    
+}
+
+void print_erro(const char *msg) {
+    printf("\033[0;31m %s \033[0m\n", msg);
+}
+
+void voltar_menu() {
+    printf("\n\033[0;32m Pressione ENTER para voltar ao menu. \033[0m");
+    getchar();
+    printf("\nVoltando ao menu de operacoes...\n");
+}
+
+FILE* abrir_arquivo(char* nome_arquivo, char* modo) {    
+    FILE *ponteiro = fopen(nome_arquivo, modo);  // Tentar abrir no modo de leitura
+
+    if (ponteiro == NULL) {
+        ponteiro = fopen(nome_arquivo, "wb+"); // cria pela primeira vez
+        if (ponteiro != NULL) {
+            fclose(ponteiro); // se não houver falha, fecha o arquivo aberto
+            ponteiro = fopen(nome_arquivo, modo); // reabre o arquivo para retorna-lo
+        }else {
+            print_erro("Erro ao criar arquivo.");
+            return NULL;
+        }        
+    }
+
+    return ponteiro;
 }
 
 Resposta verificar_tamanho_arquivo(FILE *ponteiro) {
@@ -26,14 +49,6 @@ Resposta verificar_tamanho_arquivo(FILE *ponteiro) {
     }else {
         return OK;
     }
-}
-
-Resposta verificar_arquivo(FILE *ponteiro) {    
-    if (ponteiro == NULL) {            
-        return FALHA;
-    }
-    else
-        return OK;
 }
 
 Resposta verificar_cpf(char *entrada_cpf) {
@@ -127,31 +142,31 @@ int escolha_operacao(int max) {
     return op;
 }
 
-void ler_usuarios(Usuario array_usuarios[], int *quantidade_lida) {
-    FILE *fP = fopen("dados-usuarios", "rb");
+Resposta ler_usuarios(Usuario array_usuarios[], int *quantidade_lida) {
     Usuario usuario_temp;
     *quantidade_lida = 0;
+    FILE *fP = abrir_arquivo("dados-usuarios", "rb");
 
-    if (verificar_arquivo(fP) == FALHA) {
-        // CRIAR O ARQUIVO PELA PRIMEIRA VEZ 
-        FILE *arquivo = fopen("dados-usuarios", "wb");
-        fclose(arquivo); 
+    if (fP == NULL) {
+        print_erro("Erro ao acessar arquivo.");
+        return FALHA;
     }
 
     if (verificar_tamanho_arquivo(fP) == OK) {
             while(fread(&usuario_temp, sizeof(Usuario), 1, fP) != 0) {
-            array_usuarios[*quantidade_lida] = usuario_temp; // pega o indice disponivel no array, e armazena o usuario lido nele
-            (*quantidade_lida)++;
+                array_usuarios[*quantidade_lida] = usuario_temp; // pega o indice disponivel no array, e armazena o usuario lido nele
+                (*quantidade_lida)++;
         }
     }
 
     fclose(fP);
+    return OK;
 }
 
 Resposta salvar_usuarios(Usuario array_usuarios[], int quantidade_usuarios) {
-    FILE *fP = fopen("dados-usuarios", "wb");
+    FILE *fP = abrir_arquivo("dados-usuarios", "wb");
 
-    if (verificar_arquivo(fP) == FALHA) {
+    if (fP == NULL) {
         print_erro("Erro ao acessar arquivo.");             
         return FALHA;
     }
@@ -176,7 +191,10 @@ ResultadoLogin login_usuario() {
     int qnt_usuarios = 0, idx;
     char entrada_cpf[14], entrada_senha[18];
 
-    ler_usuarios(usuarios, &qnt_usuarios);
+    if (ler_usuarios(usuarios, &qnt_usuarios) == FALHA) {
+        print_erro("Erro ao acessar dados dos usuarios. Cancelando operacao...");
+        return retorno;
+    }
 
     if (qnt_usuarios <= 0) {
         print_erro("A plataforma ainda nao possui nenhum usuario.");
@@ -208,7 +226,10 @@ Resposta criar_usuario() {
     int qnt_usuarios = 0;
     char entrada_cpf[14], entrada_senha[18], entrada_nome[23]; // buffer para conferir tamanho
     
-    ler_usuarios(usuarios, &qnt_usuarios);
+    if (ler_usuarios(usuarios, &qnt_usuarios) == FALHA) {
+        print_erro("Erro ao acessar dados dos usuarios. Cancelando operacao...");
+        return FALHA;
+    }
     
     if (qnt_usuarios >= MAX_USUARIOS) {
         print_erro("Quantidade de usuarios criados atingiu o limite. Cancelando operacao...");
@@ -265,7 +286,10 @@ Resposta excluir_usuario() {
     int confirmacao, qnt_usuarios = 0, excluir_idx = FALHA;
     char entrada_cpf[14];
     
-    ler_usuarios(usuarios, &qnt_usuarios);
+    if (ler_usuarios(usuarios, &qnt_usuarios) == FALHA) {
+        print_erro("Erro ao acessar dados dos usuarios. Cancelando operacao...");
+        return FALHA;
+    }
 
     if (qnt_usuarios <= 0) {
         print_erro("A plataforma ainda nao possui nenhum usuario.");
@@ -323,13 +347,14 @@ void menu_operacoes(Usuario usuario_logado) {
     printf("Bem vindo %s!\n", usuario_logado.nome);
 
     do {
-        Sleep(1000);
+        sleep(1);
         exibir_operacoes();
         operacao = escolha_operacao(7);
 
         switch (operacao) {
         case 1:
-            // consultar_saldo();
+            consultar_saldo(usuario_logado);
+            sleep(1);
             break;
         case 2:
             // consultar_extrato();
@@ -350,9 +375,25 @@ void menu_operacoes(Usuario usuario_logado) {
             // atualizar_cotacao();
             break;
         case 0:
-            printf("Voltando ao menu...\n");
+            printf("Voltando ao menu inicial...\n");
             break;
         }
 
     }while (operacao != 0);
+}
+
+void consultar_saldo(Usuario usuario_atual) {
+    printf("Dados da sua conta:\n");
+
+    printf("\nNome: %s\n", usuario_atual.nome);
+    printf("CPF: %s\n", usuario_atual.cpf);
+    
+    printf("\nSaldo:\n");
+
+    printf("\nReais: R$ %.2f\n", usuario_atual.carteira.real);
+    printf("Bitcoin: %.4f BTC\n", usuario_atual.carteira.btc);
+    printf("Ethereum: %.4f ETH\n", usuario_atual.carteira.eth);
+    printf("Ripple: %.4f XRP\n", usuario_atual.carteira.xrp);
+
+    voltar_menu();
 }
