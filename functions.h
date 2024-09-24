@@ -29,8 +29,9 @@ typedef struct {
 } Saldo;
 
 typedef struct {
-    ETipoTransacao tipo; // deposito = 1, saque = 2, compra = 3, venda = 4
+    char tipo[20]; // deposito, saque, compra, venda
     char data[TAM_DATA];
+    char sigla_moeda[TAM_SIGLA];
     float valor; // valor da transação
     float taxa; // valor da taxa
 } Transacao;
@@ -40,7 +41,7 @@ typedef struct {
     char senha[MAX_SENHA];
     char nome[TAM_NOME];
     Saldo carteira;
-    Transacao historico[MAX_TRANSACOES];
+    Transacao extrato[MAX_TRANSACOES];
     int qnt_transacoes;
 } Usuario;
 
@@ -81,5 +82,6 @@ Resposta excluir_usuario();
 
 void menu_operacoes(Usuario usuario_logado);
 void consultar_saldo(Usuario usuario_atual);
+void consultar_extrato(Usuario usuario_atual);
 
 #endif

@@ -357,7 +357,8 @@ void menu_operacoes(Usuario usuario_logado) {
             sleep(1);
             break;
         case 2:
-            // consultar_extrato();
+            consultar_extrato(usuario_logado);
+            sleep(1);
             break;
         case 3:
             // depositar();
@@ -394,6 +395,22 @@ void consultar_saldo(Usuario usuario_atual) {
     printf("Bitcoin: %.4f BTC\n", usuario_atual.carteira.btc);
     printf("Ethereum: %.4f ETH\n", usuario_atual.carteira.eth);
     printf("Ripple: %.4f XRP\n", usuario_atual.carteira.xrp);
+
+    voltar_menu();
+}
+
+void consultar_extrato(Usuario usuario_atual) {
+    printf("Transações da sua conta:\n");
+
+    for (int i = 0; i < usuario_atual.qnt_transacoes; i++) {
+        printf("Tipo: %s Data: %s Valor: %s %.2f Taxa: %.2f\n",
+        usuario_atual.extrato->tipo,
+        usuario_atual.extrato->data,
+        usuario_atual.extrato->sigla_moeda,
+        usuario_atual.extrato->valor,
+        usuario_atual.extrato->taxa
+        );
+    }
 
     voltar_menu();
 }
