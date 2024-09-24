@@ -18,23 +18,24 @@ int main(){
                     printf("Login feito com sucesso!\n");                    
                     menu_operacoes(user_atual);
                 }
-                Sleep(1500);
+                sleep(1);
                 break;
             case 2:
                 if (criar_usuario() == OK) {
                     printf("\nUsuario criado com sucesso! Voltando ao menu...\n");
                 }
-                Sleep(1500);
+                sleep(1);
                 break;
             case 3:
                 if (excluir_usuario() == OK) {
                     printf("\nUsuario excluido com sucesso. Voltando ao menu...\n");
                 }
-                Sleep(1500);
+                sleep(1);
                 break;
             case 0:
                 printf("Obrigado pela sua presenca!\n");
                 printf("Encerrando o programa...\n");
+                sleep(1);
                 break;
         }
     
