@@ -29,8 +29,9 @@ typedef struct {
 } Saldo;
 
 typedef struct {
-    ETipoTransacao tipo; // deposito = 1, saque = 2, compra = 3, venda = 4
+    char tipo[20]; // deposito, saque, compra, venda
     char data[TAM_DATA];
+    char sigla_moeda[TAM_SIGLA];
     float valor; // valor da transação
     float taxa; // valor da taxa
 } Transacao;
@@ -40,7 +41,7 @@ typedef struct {
     char senha[MAX_SENHA];
     char nome[TAM_NOME];
     Saldo carteira;
-    Transacao historico[MAX_TRANSACOES];
+    Transacao extrato[MAX_TRANSACOES];
     int qnt_transacoes;
 } Usuario;
 
@@ -69,11 +70,16 @@ Resposta verificar_cpf(char *entrada_cpf);
 Resposta verificar_senha(char *entrada_senha);
 Resposta verificar_nome(char *entrada_nome);
 
+int checar_usuario(char *entrada_cpf, char* entrada_senha, Usuario array_usuarios[], int quantidade_usuarios);
+int achar_usuario(Usuario array_usuarios[], int quantidade_usuarios, Usuario usuario_logado);
+
+Resposta salvar_transacao(Usuario usuario_atual, char* tipo, char* moeda, float valor, float taxa);
+
 void exibir_menu();
 int escolha_operacao(int max);
 Resposta ler_usuarios(Usuario array_usuarios[], int *quantidade_lida);
 Resposta salvar_usuarios(Usuario array_usuarios[], int quantidade_usuarios);
-void gerar_data(char* var_data);
+char* gerar_data();
 
 ResultadoLogin login_usuario();
 Resposta criar_usuario();
@@ -81,5 +87,6 @@ Resposta excluir_usuario();
 
 void menu_operacoes(Usuario usuario_logado);
 void consultar_saldo(Usuario usuario_atual);
+void consultar_extrato(Usuario usuario_atual);
 
 #endif

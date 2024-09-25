@@ -107,6 +107,61 @@ int checar_usuario(char *entrada_cpf, char* entrada_senha, Usuario array_usuario
     return FALHA;
 }
 
+int achar_usuario(Usuario array_usuarios[], int quantidade_usuarios, Usuario usuario_logado) {
+    for (int i = 0; i < quantidade_usuarios; i++) {
+        if (strcmp(usuario_logado.cpf, array_usuarios[i].cpf) == 0) {           
+            return i;            
+        }    
+    }
+    return FALHA;
+}
+
+Resposta salvar_transacao(Usuario usuario_atual, char* tipo, char* moeda, float valor, float taxa) {
+    Usuario usuarios[10];
+    int qnt_usuarios = 0, idx_usuario;
+
+    Transacao nova_linha;
+    char data_atual[TAM_DATA];
+    strcpy(data_atual, gerar_data());
+
+    
+    if (ler_usuarios(usuarios, &qnt_usuarios) == FALHA) {
+        print_erro("Erro ao acessar dados dos usuarios. Cancelando operacao...");
+        return FALHA;
+    }
+
+    strcpy(nova_linha.tipo, tipo);
+    strcpy(nova_linha.data, data_atual);
+    strcpy(nova_linha.sigla_moeda, moeda);
+    nova_linha.valor = valor;
+    nova_linha.taxa = taxa;
+
+    if (usuario_atual.qnt_transacoes >= MAX_TRANSACOES) {
+        for (int i = 0; i < MAX_TRANSACOES - 1; i++) { // excluir a linha mais antiga, e mover todas as linhas 1 pra frente
+            usuario_atual.extrato[i] = usuario_atual.extrato[i + 1];
+        }
+        usuario_atual.extrato[MAX_TRANSACOES - 1] = nova_linha;
+    }else {
+        usuario_atual.extrato[usuario_atual.qnt_transacoes] = nova_linha;
+        usuario_atual.qnt_transacoes++;        
+    }
+
+    idx_usuario = achar_usuario(usuarios, qnt_usuarios, usuario_atual);
+    if (idx_usuario == FALHA) {
+        print_erro("Erro ao encontrar o usuario.");
+        return FALHA;
+    }
+
+    usuarios[idx_usuario] = usuario_atual;
+
+    if (salvar_usuarios(usuarios, qnt_usuarios) == FALHA) {
+        print_erro("Erro ao salvar os dados do usuario. Cancelando operacao...");
+        return FALHA;
+    }
+
+    return OK;
+}
+
 void exibir_menu() {
     printf("\nBem-Vindo ao Exchange de CriptoMoedas!\n");
     printf("\n1. Login\n");
@@ -176,13 +231,16 @@ Resposta salvar_usuarios(Usuario array_usuarios[], int quantidade_usuarios) {
     return OK;
 }
 
-void gerar_data(char* var_data) {    
+char* gerar_data() {  
+    static char data_string[TAM_DATA];
     time_t tempo_data;
     time(&tempo_data); // gera tempo em segundos
     
     struct tm *local = localtime(&tempo_data); // converte para fuso/formato local
 
-    strftime(var_data, 20, "%d/%m/%Y %H:%M:%S", local); // formatar a data e hora
+    strftime(data_string, 20, "%d/%m/%Y %H:%M:%S", local); // formatar a data e hora
+
+    return data_string;
 }
 
 ResultadoLogin login_usuario() {
@@ -356,8 +414,9 @@ void menu_operacoes(Usuario usuario_logado) {
             consultar_saldo(usuario_logado);
             sleep(1);
             break;
-        case 2:
-            // consultar_extrato();
+        case 2:            
+            consultar_extrato(usuario_logado);
+            sleep(1);
             break;
         case 3:
             // depositar();
@@ -394,6 +453,30 @@ void consultar_saldo(Usuario usuario_atual) {
     printf("Bitcoin: %.4f BTC\n", usuario_atual.carteira.btc);
     printf("Ethereum: %.4f ETH\n", usuario_atual.carteira.eth);
     printf("Ripple: %.4f XRP\n", usuario_atual.carteira.xrp);
+
+    voltar_menu();
+}
+
+void consultar_extrato(Usuario usuario_atual) {
+
+    if (usuario_atual.qnt_transacoes == 0) {
+        print_erro("Sua conta ainda nao possui nenhuma transacao.");
+        return;
+    }
+
+    printf("Transações da sua conta:\n");
+    printf("%-15s %-15s %-10s %-10s\n", "Tipo", "Data", "Valor", "Taxa");
+    printf("-----------------------------------------------\n");
+
+    for (int i = 0; i < usuario_atual.qnt_transacoes; i++) {
+        printf("%-15s %-15s %s %.2f R$ %.2f\n",
+        usuario_atual.extrato[i].tipo,
+        usuario_atual.extrato[i].data,
+        usuario_atual.extrato[i].sigla_moeda,
+        usuario_atual.extrato[i].valor,
+        usuario_atual.extrato[i].taxa
+        );
+    }
 
     voltar_menu();
 }
