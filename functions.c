@@ -107,16 +107,16 @@ int checar_usuario(char *entrada_cpf, char* entrada_senha, Usuario array_usuario
     return FALHA;
 }
 
-int achar_usuario(Usuario array_usuarios[], int quantidade_usuarios, Usuario usuario_logado) {
+int achar_usuario(Usuario array_usuarios[], int quantidade_usuarios, Usuario *usuario_logado) {
     for (int i = 0; i < quantidade_usuarios; i++) {
-        if (strcmp(usuario_logado.cpf, array_usuarios[i].cpf) == 0) {           
+        if (strcmp(usuario_logado->cpf, array_usuarios[i].cpf) == 0) {           
             return i;            
         }    
     }
     return FALHA;
 }
 
-Resposta salvar_transacao(Usuario usuario_atual, char* tipo, char* moeda, float valor, float taxa) {
+Resposta salvar_transacao(Usuario *usuario_logado, char* tipo, char* moeda, float valor, float taxa) {
     Usuario usuarios[10];
     int qnt_usuarios = 0, idx_usuario;
 
@@ -136,23 +136,23 @@ Resposta salvar_transacao(Usuario usuario_atual, char* tipo, char* moeda, float 
     nova_linha.valor = valor;
     nova_linha.taxa = taxa;
 
-    if (usuario_atual.qnt_transacoes >= MAX_TRANSACOES) {
+    if (usuario_logado->qnt_transacoes >= MAX_TRANSACOES) {
         for (int i = 0; i < MAX_TRANSACOES - 1; i++) { // excluir a linha mais antiga, e mover todas as linhas 1 pra frente
-            usuario_atual.extrato[i] = usuario_atual.extrato[i + 1];
+            usuario_logado->extrato[i] = usuario_logado->extrato[i + 1];
         }
-        usuario_atual.extrato[MAX_TRANSACOES - 1] = nova_linha;
+        usuario_logado->extrato[MAX_TRANSACOES - 1] = nova_linha;
     }else {
-        usuario_atual.extrato[usuario_atual.qnt_transacoes] = nova_linha;
-        usuario_atual.qnt_transacoes++;        
+        usuario_logado->extrato[usuario_logado->qnt_transacoes] = nova_linha;
+        usuario_logado->qnt_transacoes++;        
     }
 
-    idx_usuario = achar_usuario(usuarios, qnt_usuarios, usuario_atual);
+    idx_usuario = achar_usuario(usuarios, qnt_usuarios, usuario_logado);
     if (idx_usuario == FALHA) {
         print_erro("Erro ao encontrar o usuario.");
         return FALHA;
     }
 
-    usuarios[idx_usuario] = usuario_atual;
+    usuarios[idx_usuario] = *usuario_logado;
 
     if (salvar_usuarios(usuarios, qnt_usuarios) == FALHA) {
         print_erro("Erro ao salvar os dados do usuario. Cancelando operacao...");
@@ -244,7 +244,7 @@ char* gerar_data() {
 }
 
 ResultadoLogin login_usuario() {
-    Usuario usuarios[10], nulo;
+    Usuario usuarios[10], *nulo;
     ResultadoLogin retorno = { .usuario_atual = nulo, .resultado = FALHA};
     int qnt_usuarios = 0, idx;
     char entrada_cpf[14], entrada_senha[18];
@@ -274,7 +274,7 @@ ResultadoLogin login_usuario() {
     }while(idx == FALHA);
   
     retorno.resultado = OK;
-    retorno.usuario_atual = usuarios[idx];
+    retorno.usuario_atual = &usuarios[idx];
     
     return retorno;
 }
@@ -399,10 +399,10 @@ Resposta excluir_usuario() {
     }
 }
 
-void menu_operacoes(Usuario usuario_logado) {
+void menu_operacoes(Usuario *usuario_logado) {
     int operacao;
 
-    printf("Bem vindo %s!\n", usuario_logado.nome);
+    printf("Bem vindo %s!\n", usuario_logado->nome);
 
     do {
         sleep(1);
@@ -419,7 +419,7 @@ void menu_operacoes(Usuario usuario_logado) {
             sleep(1);
             break;
         case 3:
-            // depositar();
+            depositar(usuario_logado);
             break;
         case 4:
             // sacar();
@@ -441,25 +441,25 @@ void menu_operacoes(Usuario usuario_logado) {
     }while (operacao != 0);
 }
 
-void consultar_saldo(Usuario usuario_atual) {
+void consultar_saldo(Usuario *usuario_atual) {
     printf("Dados da sua conta:\n");
 
-    printf("\nNome: %s\n", usuario_atual.nome);
-    printf("CPF: %s\n", usuario_atual.cpf);
+    printf("\nNome: %s\n", usuario_atual->nome);
+    printf("CPF: %s\n", usuario_atual->cpf);
     
     printf("\nSaldo:\n");
 
-    printf("\nReais: R$ %.2f\n", usuario_atual.carteira.real);
-    printf("Bitcoin: %.4f BTC\n", usuario_atual.carteira.btc);
-    printf("Ethereum: %.4f ETH\n", usuario_atual.carteira.eth);
-    printf("Ripple: %.4f XRP\n", usuario_atual.carteira.xrp);
+    printf("\nReais: R$ %.2f\n", usuario_atual->carteira.real);
+    printf("Bitcoin: %.4f BTC\n", usuario_atual->carteira.btc);
+    printf("Ethereum: %.4f ETH\n", usuario_atual->carteira.eth);
+    printf("Ripple: %.4f XRP\n", usuario_atual->carteira.xrp);
 
     voltar_menu();
 }
 
-void consultar_extrato(Usuario usuario_atual) {
+void consultar_extrato(Usuario *usuario_atual) {
 
-    if (usuario_atual.qnt_transacoes == 0) {
+    if (usuario_atual->qnt_transacoes == 0) {
         print_erro("Sua conta ainda nao possui nenhuma transacao.");
         return;
     }
@@ -468,15 +468,40 @@ void consultar_extrato(Usuario usuario_atual) {
     printf("%-15s %-15s %-10s %-10s\n", "Tipo", "Data", "Valor", "Taxa");
     printf("-----------------------------------------------\n");
 
-    for (int i = 0; i < usuario_atual.qnt_transacoes; i++) {
+    for (int i = 0; i < usuario_atual->qnt_transacoes; i++) {
         printf("%-15s %-15s %s %.2f R$ %.2f\n",
-        usuario_atual.extrato[i].tipo,
-        usuario_atual.extrato[i].data,
-        usuario_atual.extrato[i].sigla_moeda,
-        usuario_atual.extrato[i].valor,
-        usuario_atual.extrato[i].taxa
+        usuario_atual->extrato[i].tipo,
+        usuario_atual->extrato[i].data,
+        usuario_atual->extrato[i].sigla_moeda,
+        usuario_atual->extrato[i].valor,
+        usuario_atual->extrato[i].taxa
         );
     }
+
+    voltar_menu();
+}
+
+void depositar(Usuario *usuario_atual) {
+    float entr_valor;
+    
+    printf("Faca seu deposito:\n");
+
+    do {
+        printf("\nInforme o valor a ser depositado: R$ ");
+        if (scanf("%f", &entr_valor) != 1 || entr_valor <= 0) {
+            print_erro("Valor para deposito invalido. Insira novamente.");
+            entr_valor = -1.0; // forca o loop
+        }
+        limpar_buffer();
+    }while (entr_valor <= 0);
+
+    usuario_atual->carteira.real += entr_valor;
+
+    if (salvar_transacao(usuario_atual, "Deposito", "BRL", entr_valor, 0.0) == FALHA) {
+        print_erro("Erro ao salvar a transacao efetuada. Cancelando operacao...");
+        return; // volta pro menu
+    }
+    printf("Deposito de R$ %.2f realizado com sucesso!\n", entr_valor);
 
     voltar_menu();
 }

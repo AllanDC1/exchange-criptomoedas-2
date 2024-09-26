@@ -2,7 +2,7 @@
 #include "functions.h"
 
 int main(){
-    Usuario user_atual;
+    Usuario *user_atual;
     int operacao;
     ResultadoLogin login;
 
