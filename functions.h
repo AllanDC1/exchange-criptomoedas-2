@@ -7,7 +7,11 @@
 #include <stdbool.h>
 #include <ctype.h>
 #include <time.h>
+#ifdef _WIN32
+#include <windows.h>
+#else
 #include <unistd.h>
+#endif
 
 #define TAM_CPF 12 // 11 dígitos + caracter especial no final
 #define MAX_SENHA 16 // Máximo 15 dígitos + caracter especial no final
@@ -59,6 +63,7 @@ typedef struct {
 
 //Declaração de funções
 
+void delay(int tempo_ms);
 void limpar_buffer();
 void verificar_buffer();
 void voltar_menu();

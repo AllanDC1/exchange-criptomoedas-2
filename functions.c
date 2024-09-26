@@ -1,5 +1,13 @@
 #include "functions.h"
 
+void delay(int tempo_ms) {
+    #ifdef _WIN32
+    Sleep(tempo_ms);
+    #else
+    usleep(tempo_ms * 1000); // micro -> mili
+    #endif
+}
+
 void limpar_buffer() {
     int c;
     while ((c = getchar()) != '\n' && c != EOF) { }
@@ -405,18 +413,18 @@ void menu_operacoes(Usuario *usuario_logado) {
     printf("Bem vindo %s!\n", usuario_logado->nome);
 
     do {
-        sleep(1);
+        delay(1000);
         exibir_operacoes();
         operacao = escolha_operacao(7);
 
         switch (operacao) {
         case 1:
             consultar_saldo(usuario_logado);
-            sleep(1);
+            delay(1000);
             break;
         case 2:            
             consultar_extrato(usuario_logado);
-            sleep(1);
+            delay(1000);
             break;
         case 3:
             depositar(usuario_logado);
