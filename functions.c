@@ -4,7 +4,7 @@ void delay(int tempo_ms) {
     #ifdef _WIN32
     Sleep(tempo_ms);
     #else
-    usleep(tempo_ms * 1000); // micro -> mili
+    usleep(tempo_ms * 1000); // mili * 1000 -> micro
     #endif
 }
 
@@ -244,17 +244,24 @@ char* gerar_data() {
     time_t tempo_data;
     time(&tempo_data); // gera tempo em segundos
     
-    struct tm *local = localtime(&tempo_data); // converte para fuso/formato local
+    struct tm *data_hora = gmtime(&tempo_data);
 
-    strftime(data_string, 20, "%d/%m/%Y %H:%M:%S", local); // formatar a data e hora
+    data_hora->tm_hour -= 3;
+
+    if (data_hora->tm_hour < 0) {
+        data_hora->tm_hour += 24;
+        data_hora->tm_mday -= 1; // Decrementa o dia
+    }
+
+    strftime(data_string, TAM_DATA, "%d/%m/%Y %H:%M:%S", data_hora); // formatar a data e hora
 
     return data_string;
 }
 
 ResultadoLogin login_usuario() {
-    Usuario usuarios[10], *nulo;
-    ResultadoLogin retorno = { .usuario_atual = nulo, .resultado = FALHA};
-    int qnt_usuarios = 0, idx;
+    Usuario usuarios[10];
+    ResultadoLogin retorno = { .idx_usuario_atual = FALHA, .resultado = FALHA};
+    int qnt_usuarios = 0;
     char entrada_cpf[14], entrada_senha[18];
 
     if (ler_usuarios(usuarios, &qnt_usuarios) == FALHA) {
@@ -278,12 +285,10 @@ ResultadoLogin login_usuario() {
         verificar_buffer(entrada_senha);
         printf("\n");
         
-        idx = checar_usuario(entrada_cpf, entrada_senha, usuarios, qnt_usuarios);
-    }while(idx == FALHA);
+        retorno.idx_usuario_atual = checar_usuario(entrada_cpf, entrada_senha, usuarios, qnt_usuarios);
+    }while(retorno.idx_usuario_atual == FALHA);
   
-    retorno.resultado = OK;
-    retorno.usuario_atual = &usuarios[idx];
-    
+    retorno.resultado = OK;    
     return retorno;
 }
 
@@ -303,7 +308,6 @@ Resposta criar_usuario() {
     }
 
     Usuario novo_usuario = { .carteira = { .real = 0.0, .btc = 0.0, .eth = 0.0, .xrp = 0.0 }, .qnt_transacoes = 0}; // cria novo usuario e define dados padroes
-    // CONFERIR SE PRECISARA DECLARAR UMA TRANSACAO PADRAO
 
     printf("Crie sua conta:\n");
 
@@ -407,8 +411,16 @@ Resposta excluir_usuario() {
     }
 }
 
-void menu_operacoes(Usuario *usuario_logado) {
-    int operacao;
+void menu_operacoes(int idx_logado) {
+    Usuario usuarios[10], *usuario_logado;
+    int qnt_usuarios = 0, operacao;    
+
+    if (ler_usuarios(usuarios, &qnt_usuarios) == FALHA) {
+        print_erro("Erro ao acessar dados dos usuarios. Cancelando operacao...");
+        return; // voltar ao menu
+    }
+
+    usuario_logado = &usuarios[idx_logado];
 
     printf("Bem vindo %s!\n", usuario_logado->nome);
 
@@ -472,12 +484,12 @@ void consultar_extrato(Usuario *usuario_atual) {
         return;
     }
 
-    printf("Transações da sua conta:\n");
-    printf("%-15s %-15s %-10s %-10s\n", "Tipo", "Data", "Valor", "Taxa");
+    printf("Transacoes da sua conta:\n");
+    printf("\n%-12s %-15s %-10s %-10s\n", "Tipo", "Data", "Valor", "Taxa");
     printf("-----------------------------------------------\n");
 
     for (int i = 0; i < usuario_atual->qnt_transacoes; i++) {
-        printf("%-15s %-15s %s %.2f R$ %.2f\n",
+        printf("%-12s %-15s %s %.2f R$ %.2f\n",
         usuario_atual->extrato[i].tipo,
         usuario_atual->extrato[i].data,
         usuario_atual->extrato[i].sigla_moeda,

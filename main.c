@@ -2,8 +2,7 @@
 #include "functions.h"
 
 int main(){
-    Usuario *user_atual;
-    int operacao;
+    int idx_user_atual, operacao;
     ResultadoLogin login;
 
     do {
@@ -14,9 +13,9 @@ int main(){
             case 1:
                 login = login_usuario();
                 if (login.resultado == OK) {
-                    user_atual = login.usuario_atual;
+                    idx_user_atual = login.idx_usuario_atual;
                     printf("Login feito com sucesso!\n");                    
-                    menu_operacoes(user_atual);
+                    menu_operacoes(idx_user_atual);
                 }
                 delay(1000);
                 break;

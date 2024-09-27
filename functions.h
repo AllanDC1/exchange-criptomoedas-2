@@ -57,7 +57,7 @@ typedef struct {
 } Moeda;
 
 typedef struct {
-    Usuario *usuario_atual;
+    int idx_usuario_atual;
     Resposta resultado;
 } ResultadoLogin;
 
@@ -76,9 +76,9 @@ Resposta verificar_senha(char *entrada_senha);
 Resposta verificar_nome(char *entrada_nome);
 
 int checar_usuario(char *entrada_cpf, char* entrada_senha, Usuario array_usuarios[], int quantidade_usuarios);
-int achar_usuario(Usuario array_usuarios[], int quantidade_usuarios, Usuario usuario_logado);
+int achar_usuario(Usuario array_usuarios[], int quantidade_usuarios, Usuario *usuario_logado);
 
-Resposta salvar_transacao(Usuario usuario_logado, char* tipo, char* moeda, float valor, float taxa);
+Resposta salvar_transacao(Usuario *usuario_logado, char* tipo, char* moeda, float valor, float taxa);
 
 void exibir_menu();
 int escolha_operacao(int max);
@@ -90,7 +90,7 @@ ResultadoLogin login_usuario();
 Resposta criar_usuario();
 Resposta excluir_usuario();
 
-void menu_operacoes(Usuario *usuario_logado);
+void menu_operacoes(int idx_logado);
 void consultar_saldo(Usuario *usuario_atual);
 void consultar_extrato(Usuario *usuario_atual);
 void depositar(Usuario *usuario_atual);
