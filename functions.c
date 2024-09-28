@@ -16,8 +16,9 @@ void limpar_buffer() {
 void verificar_buffer(char *entrada) {
     if (entrada[strlen(entrada) -1] != '\n') {
         limpar_buffer();
+    } else {
+        entrada[strcspn(entrada, "\n")] = 0;    
     }
-    entrada[strcspn(entrada, "\n")] = 0;    
 }
 
 void print_erro(const char *msg) {
@@ -125,7 +126,7 @@ int achar_usuario(Usuario array_usuarios[], int quantidade_usuarios, Usuario *us
 }
 
 Resposta salvar_transacao(Usuario *usuario_logado, char* tipo, char* moeda, float valor, float taxa) {
-    Usuario usuarios[10];
+    Usuario usuarios[MAX_USUARIOS];
     int qnt_usuarios = 0, idx_usuario;
 
     Transacao nova_linha;
@@ -239,9 +240,8 @@ Resposta salvar_usuarios(Usuario array_usuarios[], int quantidade_usuarios) {
     return OK;
 }
 
-Resposta ler_moedas(Moeda array_moedas[]) {
-    Moeda moeda_temp;
-    int idx_temp = 0;
+Resposta ler_moedas(Criptomoeda array_moedas[], int *qnt_moedas) {
+    Criptomoeda moeda_temp;
     FILE *fP = abrir_arquivo("dados-moedas", "rb+");
 
     if (fP == NULL) {
@@ -250,24 +250,22 @@ Resposta ler_moedas(Moeda array_moedas[]) {
     }
 
     if (verificar_tamanho_arquivo(fP) == FALHA) { // se estiver vazio/recem criado, salva as informacoes das moedas
-        Moeda array_padrao[] = {
+        Criptomoeda criptos_padrao[] = {
             {"BTC", 0.03, 0.02, 350.00},
             {"ETH", 0.02, 0.01, 14.50},
             {"XRP", 0.01, 0.01, 3.30}
-        };
+        };        
 
-        int qnt_moedas = sizeof(array_padrao) / sizeof(array_padrao[0]);
-
-        for (int i = 0; i < qnt_moedas; i++) {
-            fwrite(&array_padrao[i], sizeof(Moeda), 1, fP);
+        for (int i = 0; i < MAX_CRIPTOMOEDAS; i++) {
+            fwrite(&criptos_padrao[i], sizeof(Criptomoeda), 1, fP);
         }
 
         rewind(fP);
     }
 
-    while(fread(&moeda_temp, sizeof(Moeda), 1, fP) != 0) {
-        array_moedas[idx_temp] = moeda_temp; // pega o indice disponivel no array, e armazena nele
-        idx_temp++;
+    while(fread(&moeda_temp, sizeof(Criptomoeda), 1, fP) != 0) {
+        array_moedas[*qnt_moedas] = moeda_temp; // pega o indice disponivel no array, e armazena nele
+        (*qnt_moedas)++;
     }
 
     fclose(fP);
@@ -323,7 +321,7 @@ Resposta validar_senha(Usuario *usuario_logado) {
 }
 
 ResultadoLogin login_usuario() {
-    Usuario usuarios[10];
+    Usuario usuarios[MAX_USUARIOS];
     ResultadoLogin retorno = { .idx_usuario_atual = FALHA, .resultado = FALHA};
     int qnt_usuarios = 0;
     char entrada_cpf[14], entrada_senha[18];
@@ -357,12 +355,13 @@ ResultadoLogin login_usuario() {
 }
 
 Resposta registro_usuario() {
-    Usuario usuarios[10];
-    int qnt_usuarios = 0;
+    Usuario usuarios[MAX_USUARIOS];
+    Criptomoeda criptos_sistema[MAX_CRIPTOMOEDAS];
+    int qnt_usuarios = 0, qnt_moedas = 0;
     char entrada_cpf[14], entrada_senha[18], entrada_nome[23]; // buffer para conferir tamanho
     
-    if (ler_usuarios(usuarios, &qnt_usuarios) == FALHA) {
-        print_erro("Erro ao acessar dados dos usuarios. Cancelando operacao...");
+    if (ler_usuarios(usuarios, &qnt_usuarios) == FALHA || ler_moedas(criptos_sistema, &qnt_moedas) == FALHA) {
+        print_erro("Erro ao acessar dados dos arquivos. Cancelando operacao...");
         return FALHA;
     }
     
@@ -371,7 +370,13 @@ Resposta registro_usuario() {
         return FALHA; // voltar pro menu
     }
 
-    Usuario novo_usuario = { .carteira = { .real = 0.0, .btc = 0.0, .eth = 0.0, .xrp = 0.0 }, .qnt_transacoes = 0}; // cria novo usuario e define dados padroes
+    // Criar novo usuario e definir dados padroes
+    Usuario novo_usuario = { .carteira = { .real = 0.0 }, .qnt_transacoes = 0};
+
+    for (int i = 0; i < qnt_moedas; i++) {
+        strcpy(novo_usuario.carteira.criptomoeda[i].sigla, criptos_sistema[i].sigla);
+        novo_usuario.carteira.criptomoeda[i].saldo = 0;
+    }
 
     printf("Crie sua conta:\n");
 
@@ -416,7 +421,7 @@ Resposta registro_usuario() {
 }
 
 Resposta excluir_usuario() {
-    Usuario usuarios[10];
+    Usuario usuarios[MAX_USUARIOS];
     int confirmacao, qnt_usuarios = 0, excluir_idx = FALHA;
     char entrada_cpf[14];
     
@@ -476,7 +481,7 @@ Resposta excluir_usuario() {
 }
 
 void menu_operacoes(int idx_logado) {
-    Usuario usuarios[10], *usuario_logado;
+    Usuario usuarios[MAX_USUARIOS], *usuario_logado;
     int qnt_usuarios = 0, operacao;    
 
     if (ler_usuarios(usuarios, &qnt_usuarios) == FALHA) {
@@ -511,7 +516,8 @@ void menu_operacoes(int idx_logado) {
             delay(1000);
             break;
         case 5:
-            // comprar_criptomoeda();
+            comprar_criptomoeda(usuario_logado);
+            delay(1000);
             break;
         case 6:
             // vender_criptomoeda();
@@ -536,9 +542,9 @@ void consultar_saldo(Usuario *usuario_atual) {
     printf("\nSaldo:\n");
 
     printf("\nReais: R$ %.2f\n", usuario_atual->carteira.real);
-    printf("Bitcoin: %.4f BTC\n", usuario_atual->carteira.btc);
-    printf("Ethereum: %.4f ETH\n", usuario_atual->carteira.eth);
-    printf("Ripple: %.4f XRP\n", usuario_atual->carteira.xrp);
+    printf("Bitcoin: %.4f BTC\n", usuario_atual->carteira.criptomoeda[0].saldo); // IDEALMENTE DINAMICO
+    printf("Ethereum: %.4f ETH\n", usuario_atual->carteira.criptomoeda[1].saldo);
+    printf("Ripple: %.4f XRP\n", usuario_atual->carteira.criptomoeda[2].saldo);
 
     voltar_menu();
 }
@@ -551,11 +557,11 @@ void consultar_extrato(Usuario *usuario_atual) {
     }
 
     printf("Transacoes da sua conta:\n");
-    printf("\n%-10s %-20s %-10s %-10s\n", "Tipo", "Data", "Valor", "Taxa");
+    printf("\n%-10s %-20s %-12s %-10s\n", "Tipo", "Data", "Valor", "Taxa");
     printf("------------------------------------------------------\n");
 
     for (int i = 0; i < usuario_atual->qnt_transacoes; i++) {
-        printf("%-10s %-20s %s %-7.2f R$ %-8.2f\n",
+        printf("%-10s %-20s %s %-10.2f R$ %-10.2f\n",
         usuario_atual->extrato[i].tipo,
         usuario_atual->extrato[i].data,
         usuario_atual->extrato[i].sigla_moeda,
@@ -622,25 +628,58 @@ void sacar(Usuario *usuario_atual) {
     voltar_menu();    
 }
 
-void comprar_criptomoeda() {
-    float entr_valor;
+void comprar_criptomoeda(Usuario *usuario_atual) {
+    Criptomoeda criptos_sistema[MAX_CRIPTOMOEDAS];
+    int qnt_moedas = 0, idx_moeda;
+    float entr_valor, taxa, valor_taxado, valor_moeda;
     char entr_moeda[TAM_SIGLA];
     
+    if (ler_moedas(criptos_sistema, &qnt_moedas) == FALHA) {
+        print_erro("Erro ao acessar dados das moedas. Cancelando operacao...");
+        return; // volta pro menu
+    }
+
     printf("Compre criptomoedas:\n");
 
-    do {
-        printf("\nInforme a criptomoeda que deseja comprar:");
+    while (true) {
+        printf("\nInforme a sigla da criptomoeda que deseja comprar: "); // .upper ?
         fgets(entr_moeda, sizeof(entr_moeda), stdin);
         verificar_buffer(entr_moeda);
-    }while (!FALHA);
 
-    //usuario_atual->carteira.real += entr_valor;
+        for (int i = 0; i < qnt_moedas; i++) {
+            if (strcmp(entr_moeda, criptos_sistema[i].sigla) == 0) {
+                idx_moeda = i;
+                goto MOEDA_ENCONTRADA;
+            }
+        }
+        print_erro("Criptmoeda/Sigla invalida. Insira novamente.");
+        delay(500);     
+    };
 
-    // if (salvar_transacao(usuario_atual, "Deposito", "R$", entr_valor, 0.0) == FALHA) {
-    //     print_erro("Erro ao salvar a transacao efetuada. Cancelando operacao...");
-    //     return; // volta pro menu
-    // }
-    // printf("Deposito de R$ %.2f realizado com sucesso!\n", entr_valor);
+    MOEDA_ENCONTRADA:
+
+    do {
+        printf("\nInforme o valor, em reais, que deseja comprar da moeda: R$ ");
+        if (scanf("%f", &entr_valor) != 1 || entr_valor <= 0 || entr_valor > usuario_atual->carteira.real) {
+            print_erro("Valor para compra invalido. Insira novamente.");
+            entr_valor = -1.0; // forca o loop
+        }
+        limpar_buffer();
+    }while (entr_valor <= 0);
+    
+    taxa = entr_valor * criptos_sistema[idx_moeda].tx_compra;
+    valor_taxado = entr_valor - taxa;
+    valor_moeda = valor_taxado / criptos_sistema[idx_moeda].cotacao;
+    
+    usuario_atual->carteira.criptomoeda[idx_moeda].saldo += valor_moeda; // os indices das moedas sao iguais, pois o usuario eh criado com base nas criptos do sistema
+    usuario_atual->carteira.real -= entr_valor;
+
+    if (salvar_transacao(usuario_atual, "Compra", criptos_sistema[idx_moeda].sigla, valor_moeda, taxa) == FALHA) {
+        print_erro("Erro ao salvar a transacao efetuada. Cancelando operacao...");
+        return; // volta pro menu
+    }
+
+    printf("Compra de %.4f %s realizado com sucesso!\n", valor_moeda, criptos_sistema[idx_moeda].sigla);
 
     voltar_menu();
 }

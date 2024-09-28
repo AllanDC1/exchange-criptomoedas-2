@@ -20,16 +20,21 @@
 #define TAM_SIGLA 5 // 4 letras + \0, BTC ou DOGE por exemplo
 
 #define MAX_TRANSACOES 100
-#define MAX_USUARIOS 10 
+#define MAX_USUARIOS 10
+#define MAX_CRIPTOMOEDAS 3 // quantas criptomoedas o sistema tiver
 
 typedef enum {DEPOSITO = 1, SAQUE = 2, COMPRA = 3, VENDA = 4} ETipoTransacao;
 typedef enum {OK, FALHA = -1} Resposta;
 
+
+typedef struct {
+    char sigla[TAM_SIGLA];
+    float saldo;
+} SaldoCripto;
+
 typedef struct {
     float real;
-    float btc;
-    float eth;
-    float xrp;
+    SaldoCripto criptomoeda[MAX_CRIPTOMOEDAS];
 } Saldo;
 
 typedef struct {
@@ -54,7 +59,7 @@ typedef struct {
     float tx_venda;
     float tx_compra;
     float cotacao;
-} Moeda;
+} Criptomoeda;
 
 typedef struct {
     int idx_usuario_atual;
@@ -81,13 +86,14 @@ int achar_usuario(Usuario array_usuarios[], int quantidade_usuarios, Usuario *us
 Resposta salvar_transacao(Usuario *usuario_logado, char* tipo, char* moeda, float valor, float taxa);
 
 void exibir_menu();
+void exibir_operacoes();
 int escolha_operacao(int max);
 Resposta ler_usuarios(Usuario array_usuarios[], int *quantidade_lida);
 Resposta salvar_usuarios(Usuario array_usuarios[], int quantidade_usuarios);
-Resposta ler_moedas(Moeda array_moedas[]);
+Resposta ler_moedas(Criptomoeda array_moedas[], int *qnt_moedas);
 char* gerar_data();
-Resposta validar_senha(Usuario *usuario_logado);
 
+Resposta validar_senha(Usuario *usuario_logado);
 ResultadoLogin login_usuario();
 Resposta registro_usuario();
 Resposta excluir_usuario();
@@ -97,5 +103,6 @@ void consultar_saldo(Usuario *usuario_atual);
 void consultar_extrato(Usuario *usuario_atual);
 void depositar(Usuario *usuario_atual);
 void sacar(Usuario *usuario_atual);
+void comprar_criptomoeda(Usuario *usuario_atual);
 
 #endif
