@@ -85,6 +85,7 @@ int escolha_operacao(int max);
 Resposta ler_usuarios(Usuario array_usuarios[], int *quantidade_lida);
 Resposta salvar_usuarios(Usuario array_usuarios[], int quantidade_usuarios);
 char* gerar_data();
+Resposta validar_senha(Usuario *usuario_logado);
 
 ResultadoLogin login_usuario();
 Resposta criar_usuario();

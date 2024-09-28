@@ -258,6 +258,35 @@ char* gerar_data() {
     return data_string;
 }
 
+Resposta validar_senha(Usuario *usuario_logado) {
+    char entr_senha[25];
+    int auth = FALHA;
+    int tentativas = 0;
+
+    printf("\nValide sua senha:\n");
+
+    do {
+        printf("\nInsira sua senha: ");
+        fgets(entr_senha, sizeof(entr_senha), stdin);
+        verificar_buffer(entr_senha);
+        if (strcmp(entr_senha, usuario_logado->senha) != 0) {
+            print_erro("Senha inserida incorreta.");
+            auth = FALHA;
+            tentativas++;
+        } else {
+            auth = OK;
+        }
+    }while (auth == FALHA && tentativas < 3);
+
+    if (tentativas == 3) {
+        print_erro("\n Maximo de tentativas de senha atingido.");
+        return FALHA;
+    }else {
+        printf("\nSenha validada.\n");
+        return OK;
+    }    
+}
+
 ResultadoLogin login_usuario() {
     Usuario usuarios[10];
     ResultadoLogin retorno = { .idx_usuario_atual = FALHA, .resultado = FALHA};
@@ -440,9 +469,11 @@ void menu_operacoes(int idx_logado) {
             break;
         case 3:
             depositar(usuario_logado);
+            delay(1000);
             break;
         case 4:
             sacar(usuario_logado);
+            delay(1000);
             break;
         case 5:
             // comprar_criptos();
@@ -485,11 +516,11 @@ void consultar_extrato(Usuario *usuario_atual) {
     }
 
     printf("Transacoes da sua conta:\n");
-    printf("\n%-12s %-15s %-10s %-10s\n", "Tipo", "Data", "Valor", "Taxa");
-    printf("-----------------------------------------------\n");
+    printf("\n%-10s %-20s %-10s %-10s\n", "Tipo", "Data", "Valor", "Taxa");
+    printf("------------------------------------------------------\n");
 
     for (int i = 0; i < usuario_atual->qnt_transacoes; i++) {
-        printf("%-12s %-15s %s %.2f R$ %.2f\n",
+        printf("%-10s %-20s %s %-7.2f R$ %-8.2f\n",
         usuario_atual->extrato[i].tipo,
         usuario_atual->extrato[i].data,
         usuario_atual->extrato[i].sigla_moeda,
@@ -539,6 +570,11 @@ void sacar(Usuario *usuario_atual) {
         }
         limpar_buffer();
     }while (entr_valor <= 0);
+
+    if (validar_senha(usuario_atual) == FALHA) {
+        print_erro("Validacao de senha falhou. Cancelando operacao...");
+        return; // volta pro menu
+    }
 
     usuario_atual->carteira.real -= entr_valor;
 
