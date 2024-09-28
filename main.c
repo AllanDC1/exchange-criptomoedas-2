@@ -20,7 +20,7 @@ int main(){
                 delay(1000);
                 break;
             case 2:
-                if (criar_usuario() == OK) {
+                if (registro_usuario() == OK) {
                     printf("\nUsuario criado com sucesso! Voltando ao menu...\n");
                 }
                 delay(1000);

@@ -31,7 +31,7 @@ void voltar_menu() {
 }
 
 FILE* abrir_arquivo(char* nome_arquivo, char* modo) {    
-    FILE *ponteiro = fopen(nome_arquivo, modo);  // Tentar abrir no modo de leitura
+    FILE *ponteiro = fopen(nome_arquivo, modo);  // tentar abrir no modo
 
     if (ponteiro == NULL) {
         ponteiro = fopen(nome_arquivo, "wb+"); // cria pela primeira vez
@@ -216,9 +216,9 @@ Resposta ler_usuarios(Usuario array_usuarios[], int *quantidade_lida) {
     }
 
     if (verificar_tamanho_arquivo(fP) == OK) {
-            while(fread(&usuario_temp, sizeof(Usuario), 1, fP) != 0) {
-                array_usuarios[*quantidade_lida] = usuario_temp; // pega o indice disponivel no array, e armazena o usuario lido nele
-                (*quantidade_lida)++;
+        while(fread(&usuario_temp, sizeof(Usuario), 1, fP) != 0) {
+            array_usuarios[*quantidade_lida] = usuario_temp; // pega o indice disponivel no array, e armazena o usuario lido nele
+            (*quantidade_lida)++;
         }
     }
 
@@ -235,6 +235,41 @@ Resposta salvar_usuarios(Usuario array_usuarios[], int quantidade_usuarios) {
     }
 
     fwrite(array_usuarios, sizeof(Usuario), quantidade_usuarios, fP);
+    fclose(fP);
+    return OK;
+}
+
+Resposta ler_moedas(Moeda array_moedas[]) {
+    Moeda moeda_temp;
+    int idx_temp = 0;
+    FILE *fP = abrir_arquivo("dados-moedas", "rb+");
+
+    if (fP == NULL) {
+        print_erro("Erro ao acessar arquivo.");
+        return FALHA;
+    }
+
+    if (verificar_tamanho_arquivo(fP) == FALHA) { // se estiver vazio/recem criado, salva as informacoes das moedas
+        Moeda array_padrao[] = {
+            {"BTC", 0.03, 0.02, 350.00},
+            {"ETH", 0.02, 0.01, 14.50},
+            {"XRP", 0.01, 0.01, 3.30}
+        };
+
+        int qnt_moedas = sizeof(array_padrao) / sizeof(array_padrao[0]);
+
+        for (int i = 0; i < qnt_moedas; i++) {
+            fwrite(&array_padrao[i], sizeof(Moeda), 1, fP);
+        }
+
+        rewind(fP);
+    }
+
+    while(fread(&moeda_temp, sizeof(Moeda), 1, fP) != 0) {
+        array_moedas[idx_temp] = moeda_temp; // pega o indice disponivel no array, e armazena nele
+        idx_temp++;
+    }
+
     fclose(fP);
     return OK;
 }
@@ -321,7 +356,7 @@ ResultadoLogin login_usuario() {
     return retorno;
 }
 
-Resposta criar_usuario() {
+Resposta registro_usuario() {
     Usuario usuarios[10];
     int qnt_usuarios = 0;
     char entrada_cpf[14], entrada_senha[18], entrada_nome[23]; // buffer para conferir tamanho
@@ -476,10 +511,10 @@ void menu_operacoes(int idx_logado) {
             delay(1000);
             break;
         case 5:
-            // comprar_criptos();
+            // comprar_criptomoeda();
             break;
         case 6:
-            // vender_criptos();
+            // vender_criptomoeda();
             break;
         case 7:
             // atualizar_cotacao();
@@ -585,4 +620,27 @@ void sacar(Usuario *usuario_atual) {
     printf("Saque de R$ %.2f realizado com sucesso!\n", entr_valor);
 
     voltar_menu();    
+}
+
+void comprar_criptomoeda() {
+    float entr_valor;
+    char entr_moeda[TAM_SIGLA];
+    
+    printf("Compre criptomoedas:\n");
+
+    do {
+        printf("\nInforme a criptomoeda que deseja comprar:");
+        fgets(entr_moeda, sizeof(entr_moeda), stdin);
+        verificar_buffer(entr_moeda);
+    }while (!FALHA);
+
+    //usuario_atual->carteira.real += entr_valor;
+
+    // if (salvar_transacao(usuario_atual, "Deposito", "R$", entr_valor, 0.0) == FALHA) {
+    //     print_erro("Erro ao salvar a transacao efetuada. Cancelando operacao...");
+    //     return; // volta pro menu
+    // }
+    // printf("Deposito de R$ %.2f realizado com sucesso!\n", entr_valor);
+
+    voltar_menu();
 }
