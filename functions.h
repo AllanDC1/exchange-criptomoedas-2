@@ -94,5 +94,6 @@ void menu_operacoes(int idx_logado);
 void consultar_saldo(Usuario *usuario_atual);
 void consultar_extrato(Usuario *usuario_atual);
 void depositar(Usuario *usuario_atual);
+void sacar(Usuario *usuario_atual);
 
 #endif
