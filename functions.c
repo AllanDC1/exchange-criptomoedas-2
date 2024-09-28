@@ -442,7 +442,7 @@ void menu_operacoes(int idx_logado) {
             depositar(usuario_logado);
             break;
         case 4:
-            // sacar();
+            sacar(usuario_logado);
             break;
         case 5:
             // comprar_criptos();
@@ -517,11 +517,36 @@ void depositar(Usuario *usuario_atual) {
 
     usuario_atual->carteira.real += entr_valor;
 
-    if (salvar_transacao(usuario_atual, "Deposito", "BRL", entr_valor, 0.0) == FALHA) {
+    if (salvar_transacao(usuario_atual, "Deposito", "R$", entr_valor, 0.0) == FALHA) {
         print_erro("Erro ao salvar a transacao efetuada. Cancelando operacao...");
         return; // volta pro menu
     }
     printf("Deposito de R$ %.2f realizado com sucesso!\n", entr_valor);
 
     voltar_menu();
+}
+
+void sacar(Usuario *usuario_atual) {
+    float entr_valor;
+
+    printf("Realize seu saque:\n");
+
+    do {
+        printf("\nInforme o valor que deseja sacar: R$ ");
+        if (scanf("%f", &entr_valor) != 1 || entr_valor <= 0 || entr_valor > usuario_atual->carteira.real) {
+            print_erro("Valor desejado do saque invalido. Insira novamente.");
+            entr_valor = -1.0; // forca o loop
+        }
+        limpar_buffer();
+    }while (entr_valor <= 0);
+
+    usuario_atual->carteira.real -= entr_valor;
+
+    if (salvar_transacao(usuario_atual, "Saque", "R$", entr_valor, 0.0) == FALHA) {
+        print_erro("Erro ao salvar a transacao efetuada. Cancelando operacao...");
+        return; // volta pro menu
+    }
+    printf("Saque de R$ %.2f realizado com sucesso!\n", entr_valor);
+
+    voltar_menu();    
 }
