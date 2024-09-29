@@ -560,9 +560,10 @@ void consultar_saldo(Usuario *usuario_atual) {
     printf("CPF: %s\n", usuario_atual->cpf);
     
     printf("\nSaldo:\n");
-
+    
+    // IDEALMENTE DEVERIA SER DINAMICO
     printf("\nReais: R$ %.2f\n", usuario_atual->carteira.real);
-    printf("Bitcoin: %.4f BTC\n", usuario_atual->carteira.criptomoeda[0].saldo); // IDEALMENTE DINAMICO
+    printf("Bitcoin: %.4f BTC\n", usuario_atual->carteira.criptomoeda[0].saldo);
     printf("Ethereum: %.4f ETH\n", usuario_atual->carteira.criptomoeda[1].saldo);
     printf("Ripple: %.4f XRP\n", usuario_atual->carteira.criptomoeda[2].saldo);
 
@@ -622,6 +623,7 @@ void sacar(Usuario *usuario_atual) {
     float entr_valor;
 
     printf("Realize seu saque:\n");
+    printf("Seu saldo: R$ %.2f\n", usuario_atual->carteira.real);
 
     do {
         printf("\nInforme o valor que deseja sacar: R$ ");
@@ -660,6 +662,7 @@ void comprar_criptomoeda(Usuario *usuario_atual) {
     }
 
     printf("Compre criptomoedas:\n");
+    printf("Seu saldo: R$ %.2f\n", usuario_atual->carteira.real);
 
     while (true) {
         printf("\nInforme a sigla da criptomoeda que deseja comprar: ");
@@ -751,6 +754,7 @@ void vender_criptomoeda(Usuario *usuario_atual) {
     };
 
     MOEDA_ENCONTRADA:
+    printf("Seu saldo de %s: %.4f\n", criptos_sistema[idx_moeda].sigla, usuario_atual->carteira.criptomoeda[idx_moeda].saldo);
 
     do {
         printf("\nInforme a quantidade que deseja vender de %s:  ", criptos_sistema[idx_moeda].sigla);
