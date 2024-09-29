@@ -1,5 +1,4 @@
-#include <stdio.h>
-#include "functions.h"
+#include "exchangecripto.h"
 
 int main(){
     int idx_user_atual, operacao;
