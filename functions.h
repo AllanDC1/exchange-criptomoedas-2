@@ -106,5 +106,6 @@ void consultar_extrato(Usuario *usuario_atual);
 void depositar(Usuario *usuario_atual);
 void sacar(Usuario *usuario_atual);
 void comprar_criptomoeda(Usuario *usuario_atual);
+void vender_criptomoeda(Usuario *usuario_atual);
 
 #endif
