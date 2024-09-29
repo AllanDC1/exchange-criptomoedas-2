@@ -14,27 +14,28 @@ int main(){
                 login = login_usuario();
                 if (login.resultado == OK) {
                     idx_user_atual = login.idx_usuario_atual;
-                    printf("Login feito com sucesso!\n");                    
+                    print_sucesso("Login feito com sucesso!");
+                    delay(1000);                   
                     menu_operacoes(idx_user_atual);
                 }
                 delay(1000);
                 break;
             case 2:
                 if (registro_usuario() == OK) {
-                    printf("\nUsuario criado com sucesso! Voltando ao menu...\n");
+                    print_sucesso("\nUsuario criado com sucesso! Voltando ao menu...");
                 }
                 delay(1000);
                 break;
             case 3:
                 if (excluir_usuario() == OK) {
-                    printf("\nUsuario excluido com sucesso. Voltando ao menu...\n");
+                    print_sucesso("\nUsuario excluido com sucesso. Voltando ao menu...");
                 }
                 delay(1000);
                 break;
             case 0:
-                printf("Obrigado pela sua presenca!\n");
+                print_sucesso("Obrigado pela sua presenca!");
                 printf("Encerrando o programa...\n");
-                delay(1000);
+                delay(1500);
                 break;
         }
     

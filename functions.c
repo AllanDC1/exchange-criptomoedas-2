@@ -31,6 +31,19 @@ void print_erro(const char *msg) {
     printf("\033[0;31m %s \033[0m\n", msg);
 }
 
+void print_titulo(const char *msg) {
+    printf("\033[1;36m %s \033[0m\n", msg);
+}
+
+void print_sucesso(const char *msg, ...) {
+    va_list args;
+    va_start(args, msg);
+    printf("\033[1;32m ");
+    vprintf(msg, args);
+    printf("\033[0m\n");
+    va_end(args);
+}
+
 void voltar_menu() {
     printf("\n\033[0;32m Pressione ENTER para voltar ao menu. \033[0m");
     getchar();
@@ -197,7 +210,7 @@ Resposta salvar_transacao(Usuario *usuario_logado, char* tipo, char* moeda, floa
 }
 
 void exibir_menu() {
-    printf("\nBem-Vindo ao Exchange de CriptoMoedas!\n");
+    print_titulo("\nBem-Vindo ao Exchange de CriptoMoedas!");
     printf("\n1. Login\n");
     printf("2. Registrar-se\n");
     printf("3. Excluir conta\n");
@@ -205,7 +218,7 @@ void exibir_menu() {
 }
 
 void exibir_operacoes() {
-    printf("\nOperacoes disponiveis:\n");
+    print_titulo("\nOperacoes disponiveis:");
     printf("\n1. Consultar saldo\n");
     printf("2. Consultar extrato\n");
     printf("3. Depositar\n");
@@ -334,7 +347,7 @@ Resposta validar_senha(Usuario *usuario_logado) {
     int auth = FALHA;
     int tentativas = 0;
 
-    printf("\nValide sua senha:\n");
+    print_titulo("\nValide sua senha:");
 
     do {
         printf("\nInsira sua senha: ");
@@ -354,7 +367,7 @@ Resposta validar_senha(Usuario *usuario_logado) {
         delay(1000);
         return FALHA;
     }else {
-        printf("\nSenha validada.\n");
+        print_sucesso("\nSenha validada.\n");
         delay(1500);
         return OK;
     }
@@ -376,7 +389,7 @@ ResultadoLogin login_usuario() {
         return retorno;
     }
 
-    printf("Faca seu login:\n");
+    print_titulo("Faca seu login:");
     
     do{
         printf("\nCPF: ");
@@ -418,7 +431,7 @@ Resposta registro_usuario() {
         novo_usuario.carteira.criptomoeda[i].saldo = 0;
     }
 
-    printf("Crie sua conta:\n");
+    print_titulo("Crie sua conta:\n");
 
     // CRIAÇÃO CPF
     do {
@@ -475,6 +488,8 @@ Resposta excluir_usuario() {
         return FALHA;
     }
 
+    print_titulo("Excluir uma conta:\n");
+
     do{
         printf("Insira o CPF da conta que sera excluida: ");
         fgets(entrada_cpf, sizeof(entrada_cpf), stdin);
@@ -523,7 +538,7 @@ void menu_operacoes(int idx_logado) {
 
     usuario_logado = &usuarios[idx_logado];
 
-    printf("Bem vindo %s!\n", usuario_logado->nome);
+    printf("\nBem vindo\033[0;35m %s!\033[0m\n", usuario_logado->nome);
 
     do {
         delay(1000);
@@ -568,12 +583,12 @@ void menu_operacoes(int idx_logado) {
 }
 
 void consultar_saldo(Usuario *usuario_atual) {
-    printf("Dados da sua conta:\n");
+    print_titulo("Dados da sua conta:");
 
     printf("\nNome: %s\n", usuario_atual->nome);
     printf("CPF: %s\n", usuario_atual->cpf);
     
-    printf("\nSaldo:\n");
+    print_titulo("\nSaldo:");
     
     // IDEALMENTE DEVERIA SER DINAMICO
     printf("\nReais: R$ %.2f\n", usuario_atual->carteira.real);
@@ -591,7 +606,7 @@ void consultar_extrato(Usuario *usuario_atual) {
         return;
     }
 
-    printf("Transacoes da sua conta:\n");
+    print_titulo("Transacoes da sua conta:");
     printf("\n%-10s %-20s %-12s %-10s\n", "Tipo", "Data", "Valor", "Taxa");
     printf("------------------------------------------------------\n");
 
@@ -611,7 +626,7 @@ void consultar_extrato(Usuario *usuario_atual) {
 void depositar(Usuario *usuario_atual) {
     float entr_valor;
     
-    printf("Faca seu deposito:\n");
+    print_titulo("Faca seu deposito:");
 
     do {
         printf("\nInforme o valor a ser depositado: R$ ");
@@ -628,7 +643,7 @@ void depositar(Usuario *usuario_atual) {
         print_erro("Erro ao salvar a transacao efetuada. Cancelando operacao...");
         return; // volta pro menu
     }
-    printf("Deposito de R$ %.2f realizado com sucesso!\n", entr_valor);
+    print_sucesso("Deposito de R$ %.2f realizado com sucesso!", entr_valor);
 
     voltar_menu();
 }
@@ -636,7 +651,7 @@ void depositar(Usuario *usuario_atual) {
 void sacar(Usuario *usuario_atual) {
     float entr_valor;
 
-    printf("Realize seu saque:\n");
+    print_titulo("Realize seu saque:");
     printf("Seu saldo: R$ %.2f\n", usuario_atual->carteira.real);
 
     do {
@@ -659,7 +674,7 @@ void sacar(Usuario *usuario_atual) {
         print_erro("Erro ao salvar a transacao efetuada. Cancelando operacao...");
         return; // volta pro menu
     }
-    printf("Saque de R$ %.2f realizado com sucesso!\n", entr_valor);
+    print_sucesso("Saque de R$ %.2f realizado com sucesso!", entr_valor);
 
     voltar_menu();    
 }
@@ -675,7 +690,7 @@ void comprar_criptomoeda(Usuario *usuario_atual) {
         return; // volta pro menu
     }
 
-    printf("Compre criptomoedas:\n");
+    print_titulo("Comprar criptomoedas:");
     printf("Seu saldo: R$ %.2f\n", usuario_atual->carteira.real);
 
     while (true) {
@@ -714,7 +729,7 @@ void comprar_criptomoeda(Usuario *usuario_atual) {
     valor_taxado = entr_valor - taxa;
     valor_moeda = valor_taxado / criptos_sistema[idx_moeda].cotacao;
 
-    printf("\nInformacoes da sua transacao:\n");
+    print_titulo("Informacoes da sua transacao:");
     printf("\nCompra de %.4f %s, por R$ %.2f\n", valor_moeda, criptos_sistema[idx_moeda].sigla, entr_valor);
     printf("Taxa de transacao: R$ %.2f\n", taxa);
     printf("Cotacao %s: R$ %.2f\n", criptos_sistema[idx_moeda].sigla, criptos_sistema[idx_moeda].cotacao);
@@ -733,7 +748,7 @@ void comprar_criptomoeda(Usuario *usuario_atual) {
         return; // volta pro menu
     }
 
-    printf("Compra de %.4f %s realizada com sucesso!\n", valor_moeda, criptos_sistema[idx_moeda].sigla);
+    print_sucesso("Compra de %.4f %s realizada com sucesso!", valor_moeda, criptos_sistema[idx_moeda].sigla);
 
     voltar_menu();
 }
@@ -749,7 +764,7 @@ void vender_criptomoeda(Usuario *usuario_atual) {
         return; // volta pro menu
     }
 
-    printf("Vender criptomoedas:\n");
+    print_titulo("Vender criptomoedas:");
 
     while (true) {
         printf("\nInforme a sigla da criptomoeda que deseja vender: ");
@@ -788,7 +803,7 @@ void vender_criptomoeda(Usuario *usuario_atual) {
     taxa = valor_reais * criptos_sistema[idx_moeda].tx_venda;
     valor_taxado = valor_reais - taxa;
 
-    printf("\nInformacoes da sua transacao:\n");
+    print_titulo("Informacoes da sua transacao:");
     printf("\nVenda de %.4f %s, por R$ %.2f\n", entr_valor, criptos_sistema[idx_moeda].sigla, valor_taxado);
     printf("Taxa de transacao: R$ %.2f\n", taxa);
     printf("Cotacao %s: R$ %.2f\n", criptos_sistema[idx_moeda].sigla, criptos_sistema[idx_moeda].cotacao);
@@ -807,7 +822,7 @@ void vender_criptomoeda(Usuario *usuario_atual) {
         return; // volta pro menu
     }
 
-    printf("Venda de %.4f %s realizada com sucesso!\n", entr_valor, criptos_sistema[idx_moeda].sigla);
+    print_sucesso("Venda de %.4f %s realizada com sucesso!", entr_valor, criptos_sistema[idx_moeda].sigla);
 
     voltar_menu();
 }
@@ -821,7 +836,7 @@ void atualizar_cotacao() {
         return; // volta pro menu
     }
 
-    printf("Atualizar a cotacao das criptomoedas:\n");
+    print_titulo("Atualizar a cotacao das criptomoedas:");
     printf("\nCotacao atual:\n");
     for (int i = 0; i < qnt_moedas; i++) {
         printf("%s: R$%.2f\n", criptos_sistema[i].sigla, criptos_sistema[i].cotacao);
@@ -832,7 +847,7 @@ void atualizar_cotacao() {
         print_erro("Operacao cancelada. Voltando para o menu...");
         return; // volta pro menu
     }
-    printf("\n");
+    print_sucesso("\nCotacao das moedas atualizadas:");
 
     srand(time(NULL));
 

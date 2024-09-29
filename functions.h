@@ -7,6 +7,7 @@
 #include <stdbool.h>
 #include <ctype.h>
 #include <time.h>
+#include <stdarg.h>
 #ifdef _WIN32
 #include <windows.h>
 #else
@@ -73,6 +74,8 @@ void upper(char* str);
 void limpar_buffer();
 void verificar_buffer();
 void print_erro(const char *msg);
+void print_titulo(const char *msg);
+void print_sucesso(const char *msg, ...);
 void voltar_menu();
 Resposta confirmar_acao();
 
