@@ -297,6 +297,19 @@ Resposta ler_moedas(Criptomoeda array_moedas[], int *qnt_moedas) {
     return OK;
 }
 
+Resposta salvar_moedas(Criptomoeda array_moedas[], int quantidade_moedas) {
+    FILE *fP = abrir_arquivo("dados-moedas", "wb");
+
+    if (fP == NULL) {
+        print_erro("Erro ao acessar arquivo.");             
+        return FALHA;
+    }
+
+    fwrite(array_moedas, sizeof(Criptomoeda), quantidade_moedas, fP);
+    fclose(fP);
+    return OK;
+}
+
 char* gerar_data() {  
     static char data_string[TAM_DATA];
     time_t tempo_data;
@@ -543,7 +556,8 @@ void menu_operacoes(int idx_logado) {
             delay(1000);
             break;
         case 7:
-            // atualizar_cotacao();
+            atualizar_cotacao();
+            delay(1000);
             break;
         case 0:
             printf("Voltando ao menu inicial...\n");
@@ -794,6 +808,47 @@ void vender_criptomoeda(Usuario *usuario_atual) {
     }
 
     printf("Venda de %.4f %s realizada com sucesso!\n", entr_valor, criptos_sistema[idx_moeda].sigla);
+
+    voltar_menu();
+}
+
+void atualizar_cotacao() {
+    Criptomoeda criptos_sistema[MAX_CRIPTOMOEDAS];
+    int qnt_moedas = 0;
+
+    if (ler_moedas(criptos_sistema, &qnt_moedas) == FALHA) {
+        print_erro("Erro ao acessar dados das moedas. Cancelando operacao...");
+        return; // volta pro menu
+    }
+
+    printf("Atualizar a cotacao das criptomoedas:\n");
+    printf("\nCotacao atual:\n");
+    for (int i = 0; i < qnt_moedas; i++) {
+        printf("%s: R$%.2f\n", criptos_sistema[i].sigla, criptos_sistema[i].cotacao);
+    }
+
+    printf("\nDeseja realmente atualizar as cotacoes das criptomoedas?");
+    if (confirmar_acao() == FALHA) {
+        print_erro("Operacao cancelada. Voltando para o menu...");
+        return; // volta pro menu
+    }
+    printf("\n");
+
+    srand(time(NULL));
+
+    for (int i = 0; i < qnt_moedas; i++) {
+        int numero_variacao = (rand() % 11) - 5;
+        float porcentagem_variacao = (float)numero_variacao / 100.0;
+        
+        criptos_sistema[i].cotacao *= (1 + porcentagem_variacao);
+        
+        printf("Nova cotacao %s: %.2f (Variacao de %d%%)\n", criptos_sistema[i].sigla, criptos_sistema[i].cotacao, numero_variacao);
+    }
+
+    if (salvar_moedas(criptos_sistema, qnt_moedas) == FALHA) {
+        print_erro("Erro ao salvar os dados da moeda. Cancelando operacao...");
+        return; // voltar pro menu
+    }
 
     voltar_menu();
 }
