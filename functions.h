@@ -93,6 +93,7 @@ int escolha_operacao(int max);
 Resposta ler_usuarios(Usuario array_usuarios[], int *quantidade_lida);
 Resposta salvar_usuarios(Usuario array_usuarios[], int quantidade_usuarios);
 Resposta ler_moedas(Criptomoeda array_moedas[], int *qnt_moedas);
+Resposta salvar_moedas(Criptomoeda array_moedas[], int quantidade_moedas);
 char* gerar_data();
 
 Resposta validar_senha(Usuario *usuario_logado);
@@ -107,5 +108,6 @@ void depositar(Usuario *usuario_atual);
 void sacar(Usuario *usuario_atual);
 void comprar_criptomoeda(Usuario *usuario_atual);
 void vender_criptomoeda(Usuario *usuario_atual);
+void atualizar_cotacao();
 
 #endif
