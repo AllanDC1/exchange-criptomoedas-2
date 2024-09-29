@@ -69,10 +69,12 @@ typedef struct {
 //Declaração de funções
 
 void delay(int tempo_ms);
+void upper(char* str);
 void limpar_buffer();
 void verificar_buffer();
-void voltar_menu();
 void print_erro(const char *msg);
+void voltar_menu();
+Resposta confirmar_acao();
 
 FILE* abrir_arquivo(char* nome_arquivo, char* modo);
 Resposta verificar_tamanho_arquivo(FILE *ponteiro);
