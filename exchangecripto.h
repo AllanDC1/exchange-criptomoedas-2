@@ -24,7 +24,8 @@
 // LIMITACOES DO SISTEMA
 #define MAX_TRANSACOES 100
 #define MAX_USUARIOS 10
-#define MAX_CRIPTOMOEDAS 3 // quantas criptomoedas o sistema tiver
+#define MAX_CRIPTOMOEDAS 10 // quantas criptomoedas o sistema tiver
+#define MAX_ADMS 5
 
 typedef enum {OK, FALHA = -1} Resposta; // enum para melhor legibilidade
 
@@ -68,6 +69,12 @@ typedef struct {
     int idx_usuario_atual;
     Resposta resultado;
 } ResultadoLogin;
+
+typedef struct {
+    char cpf[TAM_CPF];
+    char senha[MAX_SENHA];
+    char nome[TAM_NOME];
+} Admin;
 
 //Declaração de funções
 
@@ -120,5 +127,13 @@ void comprar_criptomoeda(Usuario *usuario_atual);
 void vender_criptomoeda(Usuario *usuario_atual);
 void atualizar_cotacao();
 void menu_operacoes(int idx_logado);
+
+// FUNCOES ADM
+void menu_adm();
+Resposta ler_admins(Admin array_admins[], int *quantidade_lida);
+Resposta registro_admin();
+Resposta salvar_adms(Admin array_admins[], int qnt_adms);
+Resposta excluir_adm();
+ResultadoLogin login_adm();
 
 #endif
