@@ -92,114 +92,6 @@ Resposta confirmar_acao() {
     }
 }
 
-FILE* abrir_arquivo(char* nome_arquivo, char* modo) {    
-    FILE *ponteiro = fopen(nome_arquivo, modo);  // tentar abrir no modo
-
-    if (ponteiro == NULL) {
-        ponteiro = fopen(nome_arquivo, "wb+"); // cria pela primeira vez
-        if (ponteiro != NULL) {
-            fclose(ponteiro); // se não houver falha, fecha o arquivo aberto
-            ponteiro = fopen(nome_arquivo, modo); // reabre o arquivo para retorna-lo
-        }else {
-            print_erro("Erro ao criar arquivo.");
-            return NULL;
-        }        
-    }
-
-    return ponteiro;
-}
-
-Resposta verificar_tamanho_arquivo(FILE *ponteiro) {
-    fseek(ponteiro, 0, SEEK_END);
-    long tamanho = ftell(ponteiro); 
-    rewind(ponteiro);
-
-    if (tamanho == 0) {
-        return FALHA;
-    }else {
-        return OK;
-    }
-}
-
-Resposta ler_usuarios(Usuario array_usuarios[], int *quantidade_lida) {
-    Usuario usuario_temp;
-    *quantidade_lida = 0;
-    FILE *fP = abrir_arquivo("dados-usuarios", "rb");
-
-    if (fP == NULL) {
-        print_erro("Erro ao acessar arquivo.");
-        return FALHA;
-    }
-
-    if (verificar_tamanho_arquivo(fP) == OK) {
-        while(fread(&usuario_temp, sizeof(Usuario), 1, fP) != 0) {
-            array_usuarios[*quantidade_lida] = usuario_temp; // pega o indice disponivel no array, e armazena o usuario lido nele
-            (*quantidade_lida)++;
-        }
-    }
-
-    fclose(fP);
-    return OK;
-}
-
-Resposta salvar_usuarios(Usuario array_usuarios[], int quantidade_usuarios) {
-    FILE *fP = abrir_arquivo("dados-usuarios", "wb");
-
-    if (fP == NULL) {
-        print_erro("Erro ao acessar arquivo.");             
-        return FALHA;
-    }
-
-    fwrite(array_usuarios, sizeof(Usuario), quantidade_usuarios, fP);
-    fclose(fP);
-    return OK;
-}
-
-Resposta ler_moedas(Criptomoeda array_moedas[], int *qnt_moedas) {
-    Criptomoeda moeda_temp;
-    FILE *fP = abrir_arquivo("dados-moedas", "rb+");
-
-    if (fP == NULL) {
-        print_erro("Erro ao acessar arquivo.");
-        return FALHA;
-    }
-
-    if (verificar_tamanho_arquivo(fP) == FALHA) { // se estiver vazio/recem criado, salva as informacoes das moedas
-        Criptomoeda criptos_padrao[] = {
-            {"BTC", 0.03, 0.02, 350.00},
-            {"ETH", 0.02, 0.01, 14.50},
-            {"XRP", 0.01, 0.01, 3.30}
-        };        
-
-        for (int i = 0; i < MAX_CRIPTOMOEDAS; i++) {
-            fwrite(&criptos_padrao[i], sizeof(Criptomoeda), 1, fP);
-        }
-
-        rewind(fP);
-    }
-
-    while(fread(&moeda_temp, sizeof(Criptomoeda), 1, fP) != 0) {
-        array_moedas[*qnt_moedas] = moeda_temp; // pega o indice disponivel no array, e armazena nele
-        (*qnt_moedas)++;
-    }
-
-    fclose(fP);
-    return OK;
-}
-
-Resposta salvar_moedas(Criptomoeda array_moedas[], int quantidade_moedas) {
-    FILE *fP = abrir_arquivo("dados-moedas", "wb");
-
-    if (fP == NULL) {
-        print_erro("Erro ao acessar arquivo.");             
-        return FALHA;
-    }
-
-    fwrite(array_moedas, sizeof(Criptomoeda), quantidade_moedas, fP);
-    fclose(fP);
-    return OK;
-}
-
 Resposta verificar_cpf(char *entrada_cpf) {
     int len_cpf = strlen(entrada_cpf);
     verificar_buffer(entrada_cpf);
@@ -340,4 +232,366 @@ Resposta salvar_transacao(Usuario *usuario_logado, char* tipo, char* moeda, floa
     }
 
     return OK;
+}
+
+void consultar_saldo(Usuario *usuario_atual) {
+    Criptomoeda criptos_sistema[MAX_CRIPTOMOEDAS];
+    int qnt_moedas = 0;
+
+    if (ler_moedas(criptos_sistema, &qnt_moedas) == FALHA) {
+        print_erro("Erro ao acessar dados das moedas. Cancelando operacao...");
+        return; // volta pro menu
+    }
+
+    print_titulo("Dados da conta:");
+
+    printf("\nNome: %s\n", usuario_atual->nome);
+    printf("CPF: %s\n", usuario_atual->cpf);
+    
+    print_titulo("\nSaldo:");
+    
+    printf("\nBRL: R$ %.2f\n", usuario_atual->carteira.real);
+
+    for (int i = 0; i < qnt_moedas; i++) {
+        printf("%s: %4.f\n", usuario_atual->carteira.criptomoeda[i].sigla, usuario_atual->carteira.criptomoeda[i].saldo);
+    }
+
+    voltar_menu();
+}
+
+void consultar_extrato(Usuario *usuario_atual) {
+
+    if (usuario_atual->qnt_transacoes == 0) {
+        print_erro("Essa conta ainda nao possui nenhuma transacao.");
+        return;
+    }
+
+    print_titulo("Transacoes da conta:");
+    printf("\n%-10s %-20s %-12s %-10s\n", "Tipo", "Data", "Valor", "Taxa");
+    printf("------------------------------------------------------\n");
+
+    for (int i = 0; i < usuario_atual->qnt_transacoes; i++) {
+        printf("%-10s %-20s %-3s %-8.2f R$ %-10.2f\n",
+        usuario_atual->extrato[i].tipo,
+        usuario_atual->extrato[i].data,
+        usuario_atual->extrato[i].sigla_moeda,
+        usuario_atual->extrato[i].valor,
+        usuario_atual->extrato[i].taxa
+        );
+    }
+
+    voltar_menu();
+}
+
+void depositar(Usuario *usuario_atual) {
+    float entr_valor;
+    
+    print_titulo("Faca seu deposito:");
+
+    do {
+        printf("\nInforme o valor a ser depositado: R$ ");
+        if (scanf("%f", &entr_valor) != 1 || entr_valor <= 0) {
+            print_erro("Valor para deposito invalido. Insira novamente.");
+            entr_valor = -1.0; // forca o loop
+        }
+        limpar_buffer();
+    }while (entr_valor <= 0);
+
+    usuario_atual->carteira.real += entr_valor;
+
+    if (salvar_transacao(usuario_atual, "Deposito", "R$", entr_valor, 0.0) == FALHA) {
+        print_erro("Erro ao salvar a transacao efetuada. Cancelando operacao...");
+        return; // volta pro menu
+    }
+    print_sucesso("Deposito de R$ %.2f realizado com sucesso!", entr_valor);
+
+    voltar_menu();
+}
+
+void sacar(Usuario *usuario_atual) {
+    float entr_valor;
+
+    if (usuario_atual->carteira.real <= 0) {
+        print_erro("Voce nao possui saldo na sua carteira.");
+        return; // volta pro menu
+    }
+
+    print_titulo("Realize seu saque:");
+    printf("Seu saldo: R$ %.2f\n", usuario_atual->carteira.real);
+
+    do {
+        printf("\nInforme o valor que deseja sacar: R$ ");
+        if (scanf("%f", &entr_valor) != 1 || entr_valor <= 0 || entr_valor > usuario_atual->carteira.real) {
+            print_erro("Valor desejado do saque invalido. Insira novamente.");
+            entr_valor = -1.0; // forca o loop
+        }
+        limpar_buffer();
+    }while (entr_valor <= 0);
+
+    if (validar_senha(usuario_atual) == FALHA) {
+        print_erro("Validacao de senha falhou. Cancelando operacao...");
+        return; // volta pro menu
+    }
+
+    usuario_atual->carteira.real -= entr_valor;
+
+    if (salvar_transacao(usuario_atual, "Saque", "R$", entr_valor, 0.0) == FALHA) {
+        print_erro("Erro ao salvar a transacao efetuada. Cancelando operacao...");
+        return; // volta pro menu
+    }
+    print_sucesso("Saque de R$ %.2f realizado com sucesso!", entr_valor);
+
+    voltar_menu();    
+}
+
+void comprar_criptomoeda(Usuario *usuario_atual) {
+    Criptomoeda criptos_sistema[MAX_CRIPTOMOEDAS];
+    int qnt_moedas = 0, idx_moeda;
+    float entr_valor, taxa, valor_taxado, valor_moeda;
+    char entr_sigla[TAM_SIGLA];
+    
+    if (ler_moedas(criptos_sistema, &qnt_moedas) == FALHA) {
+        print_erro("Erro ao acessar dados das moedas. Cancelando operacao...");
+        return; // volta pro menu
+    }
+
+    if (qnt_moedas == 0) {
+        print_erro("Nenhuma Criptomoeda foi registrada no sistema.");
+        return;
+    }
+
+    if (usuario_atual->carteira.real <= 0) {
+        print_erro("Voce nao possui saldo na sua carteira.");
+        return; // volta pro menu
+    }
+
+    print_titulo("Comprar criptomoedas:");
+    printf("Seu saldo: R$ %.2f\n", usuario_atual->carteira.real);
+
+    while (true) {
+        printf("\nInforme a sigla da criptomoeda que deseja comprar: ");
+        fgets(entr_sigla, sizeof(entr_sigla), stdin);
+        verificar_buffer(entr_sigla);
+        upper(entr_sigla);
+
+        for (int i = 0; i < qnt_moedas; i++) {
+            if (strcmp(entr_sigla, criptos_sistema[i].sigla) == 0) {
+                idx_moeda = i;
+                goto MOEDA_ENCONTRADA;
+            }
+        }
+        print_erro("Criptmoeda/Sigla invalida. Insira novamente.");
+        delay(500);     
+    };
+
+    MOEDA_ENCONTRADA:
+
+    do {
+        printf("\nInforme o valor, em reais, que deseja comprar de %s: R$ ", criptos_sistema[idx_moeda].sigla);
+        if (scanf("%f", &entr_valor) != 1 || entr_valor <= 0 || entr_valor > usuario_atual->carteira.real) {
+            print_erro("Valor para compra invalido. Insira novamente.");
+            entr_valor = -1.0; // forca o loop
+        }
+        limpar_buffer();
+    }while (entr_valor <= 0);
+
+    if (validar_senha(usuario_atual) == FALHA) {
+        print_erro("Validacao de senha falhou. Cancelando operacao...");
+        return; // volta pro menu
+    }
+    
+    taxa = entr_valor * criptos_sistema[idx_moeda].tx_compra;
+    valor_taxado = entr_valor - taxa;
+    valor_moeda = valor_taxado / criptos_sistema[idx_moeda].cotacao;
+
+    print_titulo("Informacoes da sua transacao:");
+    printf("\nCompra de %.4f %s, por R$ %.2f\n", valor_moeda, criptos_sistema[idx_moeda].sigla, entr_valor);
+    printf("Taxa de transacao: R$ %.2f\n", taxa);
+    printf("Cotacao %s: R$ %.2f\n", criptos_sistema[idx_moeda].sigla, criptos_sistema[idx_moeda].cotacao);
+
+    print_confirmacao("\nConfirme sua compra.\n");
+    if (confirmar_acao() == FALHA) {
+        print_erro("Transacao cancelada. Voltando para o menu...");
+        return; // volta pro menu
+    }
+    
+    usuario_atual->carteira.criptomoeda[idx_moeda].saldo += valor_moeda; // os indices das moedas sao iguais, pois o usuario eh criado com base nas criptos do sistema
+    usuario_atual->carteira.real -= entr_valor;
+
+    if (salvar_transacao(usuario_atual, "Compra", criptos_sistema[idx_moeda].sigla, valor_moeda, taxa) == FALHA) {
+        print_erro("Erro ao salvar a transacao efetuada. Cancelando operacao...");
+        return; // volta pro menu
+    }
+
+    print_sucesso("\nCompra de %.4f %s realizada com sucesso!", valor_moeda, criptos_sistema[idx_moeda].sigla);
+
+    voltar_menu();
+}
+
+void vender_criptomoeda(Usuario *usuario_atual) {
+    Criptomoeda criptos_sistema[MAX_CRIPTOMOEDAS];
+    int qnt_moedas = 0, idx_moeda;
+    float entr_valor, taxa, valor_taxado, valor_reais;
+    char entr_sigla[TAM_SIGLA];
+
+    if (ler_moedas(criptos_sistema, &qnt_moedas) == FALHA) {
+        print_erro("Erro ao acessar dados das moedas. Cancelando operacao...");
+        return; // volta pro menu
+    }
+
+    if (qnt_moedas == 0) {
+        print_erro("Nenhuma Criptomoeda foi registrada no sistema.");
+        return;
+    }
+
+    print_titulo("Vender criptomoedas:");
+
+    while (true) {
+        printf("\nInforme a sigla da criptomoeda que deseja vender: ");
+        fgets(entr_sigla, sizeof(entr_sigla), stdin);
+        verificar_buffer(entr_sigla);
+        upper(entr_sigla);
+
+        for (int i = 0; i < qnt_moedas; i++) {
+            if (strcmp(entr_sigla, criptos_sistema[i].sigla) == 0) {
+                idx_moeda = i;
+                goto MOEDA_ENCONTRADA;
+            }
+        }
+        print_erro("Criptmoeda/Sigla invalida. Insira novamente.");
+        delay(500);     
+    };
+
+    MOEDA_ENCONTRADA:
+
+    if (usuario_atual->carteira.criptomoeda[idx_moeda].saldo <= 0) {
+        print_erro("\nVoce nao possui saldo dessa moeda. Cancelando operacao...");
+        return; // volta pro menu
+    }
+
+    printf("Seu saldo de %s: %.4f\n", criptos_sistema[idx_moeda].sigla, usuario_atual->carteira.criptomoeda[idx_moeda].saldo);
+
+    do {
+        printf("\nInforme a quantidade que deseja vender de %s:  ", criptos_sistema[idx_moeda].sigla);
+        if (scanf("%f", &entr_valor) != 1 || entr_valor <= 0 || entr_valor > usuario_atual->carteira.criptomoeda[idx_moeda].saldo) {
+            print_erro("Valor de venda invalido. Insira novamente.");
+            entr_valor = -1.0; // forca o loop
+        }
+        limpar_buffer();
+    }while (entr_valor <= 0);
+
+    if (validar_senha(usuario_atual) == FALHA) {
+        print_erro("Validacao de senha falhou. Cancelando operacao...");
+        return; // volta pro menu
+    }
+    
+    valor_reais = entr_valor * criptos_sistema[idx_moeda].cotacao;
+    taxa = valor_reais * criptos_sistema[idx_moeda].tx_venda;
+    valor_taxado = valor_reais - taxa;
+
+    print_titulo("Informacoes da sua transacao:");
+    printf("\nVenda de %.4f %s, por R$ %.2f\n", entr_valor, criptos_sistema[idx_moeda].sigla, valor_taxado);
+    printf("Taxa de transacao: R$ %.2f\n", taxa);
+    printf("Cotacao %s: R$ %.2f\n", criptos_sistema[idx_moeda].sigla, criptos_sistema[idx_moeda].cotacao);
+
+    print_confirmacao("\nConfirme a venda.\n");
+    if (confirmar_acao() == FALHA) {
+        print_erro("Transacao cancelada. Voltando para o menu...");
+        return; // volta pro menu
+    }
+    
+    usuario_atual->carteira.criptomoeda[idx_moeda].saldo -= entr_valor; // os indices das moedas sao iguais, pois o usuario eh criado com base nas criptos do sistema
+    usuario_atual->carteira.real += valor_taxado;
+
+    if (salvar_transacao(usuario_atual, "Venda", criptos_sistema[idx_moeda].sigla, entr_valor, taxa) == FALHA) {
+        print_erro("Erro ao salvar a transacao efetuada. Cancelando operacao...");
+        return; // volta pro menu
+    }
+
+    print_sucesso("\nVenda de %.4f %s realizada com sucesso!", entr_valor, criptos_sistema[idx_moeda].sigla);
+
+    voltar_menu();
+}
+
+void atualizar_cotacao() {
+    Criptomoeda criptos_sistema[MAX_CRIPTOMOEDAS];
+    int qnt_moedas = 0;
+
+    if (ler_moedas(criptos_sistema, &qnt_moedas) == FALHA) {
+        print_erro("Erro ao acessar dados das moedas. Cancelando operacao...");
+        return; // volta pro menu
+    }
+
+    if (qnt_moedas == 0) {
+        print_erro("Nenhuma Criptomoeda foi registrada no sistema.");
+        return;
+    }
+
+    print_titulo("Atualizar a cotacao das criptomoedas:");
+    printf("\nCotacao atual:\n");
+    for (int i = 0; i < qnt_moedas; i++) {
+        printf("%s: R$%.2f\n", criptos_sistema[i].sigla, criptos_sistema[i].cotacao);
+    }
+
+    print_confirmacao("\nDeseja realmente atualizar as cotacoes das criptomoedas?\n");
+    if (confirmar_acao() == FALHA) {
+        print_erro("Operacao cancelada. Voltando para o menu...");
+        return; // volta pro menu
+    }
+    print_sucesso("\nCotacao das moedas atualizadas:");
+
+    srand(time(NULL));
+
+    for (int i = 0; i < qnt_moedas; i++) {
+        int numero_variacao = (rand() % 11) - 5;
+        float porcentagem_variacao = (float)numero_variacao / 100.0;
+        
+        criptos_sistema[i].cotacao *= (1 + porcentagem_variacao);
+        
+        printf("Nova cotacao %s: %.2f (Variacao de %d%%)\n", criptos_sistema[i].sigla, criptos_sistema[i].cotacao, numero_variacao);
+    }
+
+    if (salvar_moedas(criptos_sistema, qnt_moedas) == FALHA) {
+        print_erro("Erro ao salvar os dados da moeda. Cancelando operacao...");
+        return; // voltar pro menu
+    }
+
+    voltar_menu();
+}
+
+int selecionar_investidor() {
+    Usuario usuarios[MAX_USUARIOS];
+    int qnt_usuarios = 0, idx_selecionado = FALHA;
+    char entrada_cpf[14];
+
+    if (ler_usuarios(usuarios, &qnt_usuarios) == FALHA) {
+        print_erro("Erro ao acessar dados dos usuarios. Cancelando operacao...");
+        return FALHA;
+    }
+
+    if (qnt_usuarios <= 0) {
+        print_erro("A plataforma ainda nao possui nenhum investidor.");
+        return FALHA;
+    }
+
+    do {
+        printf("Insira o CPF do investidor que deseja consultar: ");        
+        fgets(entrada_cpf, sizeof(entrada_cpf), stdin);
+        verificar_buffer(entrada_cpf);        
+
+        for (int i = 0; i < qnt_usuarios; i++) {
+            if (strcmp(entrada_cpf, usuarios[i].cpf) == 0) {
+                idx_selecionado = i;
+                break;
+            }
+        }
+
+        if (idx_selecionado == FALHA) {
+            print_erro("Investidor nao encontrado. Insira novamente.");
+            printf("\n");
+        }
+
+    }while (idx_selecionado == FALHA);
+    
+    return idx_selecionado;
 }
