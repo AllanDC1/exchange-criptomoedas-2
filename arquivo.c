@@ -117,7 +117,7 @@ Resposta ler_admins(Admin array_admins[], int *quantidade_lida) {
     return OK;
 }
 
-Resposta salvar_adms(Admin array_admins[], int qnt_adms) {
+Resposta salvar_admins(Admin array_admins[], int qnt_adms) {
     FILE *fP = abrir_arquivo("admins.bin", "wb");
 
     if (fP == NULL) {

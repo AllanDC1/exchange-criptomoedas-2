@@ -83,11 +83,11 @@ Resposta registro_usuario() {
         novo_usuario.carteira.criptomoeda[i].saldo = 0;
     }
 
-    print_titulo("Crie sua conta:");
+    print_titulo("Crie uma conta:");
 
     // CRIAÇÃO CPF
     do {
-        printf("\nInforme seu CPF (apenas numeros): ");
+        printf("\nInforme o CPF (apenas numeros): ");
         fgets(entrada_cpf, sizeof(entrada_cpf), stdin);               
     } while (verificar_cpf(entrada_cpf) == FALHA);
 
@@ -111,7 +111,7 @@ Resposta registro_usuario() {
 
     // CRIAÇÃO NOME
     do {
-        printf("\nInforme seu nome: ");
+        printf("\nInforme nome: ");
         fgets(entrada_nome, sizeof(entrada_nome), stdin);         
     } while (verificar_nome(entrada_nome) == FALHA);
 
@@ -257,7 +257,7 @@ void menu_adm() {
     print_titulo("\nPrograma de Administrador do Exchange de CriptoMoedas.");
     printf("\n1. Login\n");
     printf("2. Registrar admin\n");
-    printf("3. Excluir conta admin\n");
+    printf("3. Excluir admin\n");
     printf("0. Sair\n");
 }
 
@@ -368,7 +368,7 @@ Resposta excluir_adm() {
         }
         qnt_adms--;
 
-        if (salvar_adms(admins, qnt_adms) == FALHA) {
+        if (salvar_admins(admins, qnt_adms) == FALHA) {
             print_erro("Erro ao salvar os dados dos ADMS. Cancelando operacao...");
             return FALHA; // voltar pro menu
         }
@@ -379,20 +379,19 @@ Resposta excluir_adm() {
     }
 }
 
-ResultadoLogin login_adm() {
-    Admin admins[MAX_ADMS];
-    ResultadoLogin retorno = { .idx_usuario_atual = FALHA, .resultado = FALHA};
-    int qnt_adms = 0;
+Resposta login_adm() {
+    Admin admins[MAX_ADMS];    
+    int qnt_adms = 0, auth = FALHA;
     char entrada_cpf[14], entrada_senha[18];
 
     if (ler_admins(admins, &qnt_adms) == FALHA) {
         print_erro("Erro ao acessar dados dos adms. Cancelando operacao...");
-        return retorno;
+        return FALHA;
     }
 
     if (qnt_adms <= 0) {
         print_erro("A plataforma ainda nao possui nenhum ADM.");
-        return retorno;
+        return FALHA;
     }
 
     print_titulo("Faca login na conta de ADM:");
@@ -409,16 +408,92 @@ ResultadoLogin login_adm() {
         for (int i = 0; i < qnt_adms; i++) {
             if (strcmp(entrada_cpf, admins[i].cpf) == 0) {
                 if (strcmp(entrada_senha, admins[i].senha) == 0) {
-                    retorno.idx_usuario_atual = i;
+                    auth = i;
+                    break;
                 }
             }
         }
-        if (retorno.idx_usuario_atual == FALHA) {
+        if (auth == FALHA) {
             print_erro("Credenciais incorretas. Insira novamente.");
         }
 
-    }while(retorno.idx_usuario_atual == FALHA);
-  
-    retorno.resultado = OK;    
-    return retorno;
+    }while(auth == FALHA);
+
+    return OK;
+}
+
+void exibir_operacoes_adm() {
+    print_titulo("\nOperacoes para ADMS:");
+    printf("\n1. Cadastrar Investidor\n");
+    printf("2. Excluir Investidor\n");
+    printf("3. Cadastrar Criptomoeda\n");
+    printf("4. Excluir Criptomoeda\n");
+    printf("5. Consultar Saldo de Investidor\n");
+    printf("6. Consultar Extrato de Investidor\n");
+    printf("7. Atualizar cotacao das criptomoedas\n");
+    printf("0. Sair\n");
+}
+
+void operacoes_adm() {
+    Usuario usuarios[MAX_USUARIOS], *usuario_selecionado;
+    int qnt_usuarios = 0, operacao, idx_selecionado;
+
+    do {
+        delay(1000);
+        exibir_operacoes_adm();
+        operacao = escolha_operacao(7);
+
+        switch (operacao) {
+        case 1:
+            if (registro_usuario() == OK) {
+                print_sucesso("\nInvestidor criado. Voltando ao menu...");
+            }
+            delay(1000);
+            break;
+        case 2:
+            if (excluir_usuario() == OK) {
+                print_sucesso("\nInvestidor excluido. Voltando ao menu...");
+            } 
+            delay(1000);
+            break;
+        case 3:
+            delay(1000);
+            break;
+        case 4:
+            delay(1000);
+            break;
+        case 5:
+            idx_selecionado = selecionar_investidor();
+            if (idx_selecionado != FALHA) {
+                if (ler_usuarios(usuarios, &qnt_usuarios) == FALHA) {
+                    print_erro("Erro ao acessar dados dos usuarios. Cancelando operacao...");
+                    return; // voltar ao menu
+                }  
+                usuario_selecionado = &usuarios[idx_selecionado];
+                consultar_saldo(usuario_selecionado);
+            }
+            delay(1000);
+            break;
+        case 6:
+            idx_selecionado = selecionar_investidor();
+            if (idx_selecionado != FALHA) {
+                if (ler_usuarios(usuarios, &qnt_usuarios) == FALHA) {
+                    print_erro("Erro ao acessar dados dos usuarios. Cancelando operacao...");
+                    return; // voltar ao menu
+                }  
+                usuario_selecionado = &usuarios[idx_selecionado];
+                consultar_extrato(usuario_selecionado);
+            }
+            delay(1000);
+            break;
+        case 7:
+            atualizar_cotacao();
+            delay(1000);
+            break;
+        case 0:
+            printf("Voltando ao menu inicial...\n");
+            break;
+        }
+
+    }while (operacao != 0);
 }

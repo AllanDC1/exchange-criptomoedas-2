@@ -243,7 +243,7 @@ void consultar_saldo(Usuario *usuario_atual) {
         return; // volta pro menu
     }
 
-    print_titulo("Dados da sua conta:");
+    print_titulo("Dados da conta:");
 
     printf("\nNome: %s\n", usuario_atual->nome);
     printf("CPF: %s\n", usuario_atual->cpf);
@@ -262,11 +262,11 @@ void consultar_saldo(Usuario *usuario_atual) {
 void consultar_extrato(Usuario *usuario_atual) {
 
     if (usuario_atual->qnt_transacoes == 0) {
-        print_erro("Sua conta ainda nao possui nenhuma transacao.");
+        print_erro("Essa conta ainda nao possui nenhuma transacao.");
         return;
     }
 
-    print_titulo("Transacoes da sua conta:");
+    print_titulo("Transacoes da conta:");
     printf("\n%-10s %-20s %-12s %-10s\n", "Tipo", "Data", "Valor", "Taxa");
     printf("------------------------------------------------------\n");
 
@@ -557,4 +557,41 @@ void atualizar_cotacao() {
     }
 
     voltar_menu();
+}
+
+int selecionar_investidor() {
+    Usuario usuarios[MAX_USUARIOS];
+    int qnt_usuarios = 0, idx_selecionado = FALHA;
+    char entrada_cpf[14];
+
+    if (ler_usuarios(usuarios, &qnt_usuarios) == FALHA) {
+        print_erro("Erro ao acessar dados dos usuarios. Cancelando operacao...");
+        return FALHA;
+    }
+
+    if (qnt_usuarios <= 0) {
+        print_erro("A plataforma ainda nao possui nenhum investidor.");
+        return FALHA;
+    }
+
+    do {
+        printf("Insira o CPF do investidor que deseja consultar: ");        
+        fgets(entrada_cpf, sizeof(entrada_cpf), stdin);
+        verificar_buffer(entrada_cpf);        
+
+        for (int i = 0; i < qnt_usuarios; i++) {
+            if (strcmp(entrada_cpf, usuarios[i].cpf) == 0) {
+                idx_selecionado = i;
+                break;
+            }
+        }
+
+        if (idx_selecionado == FALHA) {
+            print_erro("Investidor nao encontrado. Insira novamente.");
+            printf("\n");
+        }
+
+    }while (idx_selecionado == FALHA);
+    
+    return idx_selecionado;
 }

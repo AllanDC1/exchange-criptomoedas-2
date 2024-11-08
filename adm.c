@@ -1,7 +1,7 @@
 #include "exchangecripto.h"
 
 int main() {
-    int idx_adm_atual, operacao;
+    int operacao;
     ResultadoLogin login;
 
     do {
@@ -10,12 +10,10 @@ int main() {
 
         switch (operacao) {
             case 1:
-                login = login_adm();
-                if (login.resultado == OK) {
-                    idx_adm_atual = login.idx_usuario_atual;
+                if (login_adm()== OK) {                    
                     print_sucesso("Login realizado com sucesso.");
                     delay(1000);                   
-                    menu_operacoes_adm(idx_adm_atual);
+                    operacoes_adm();
                 }
                 delay(1000);
                 break;

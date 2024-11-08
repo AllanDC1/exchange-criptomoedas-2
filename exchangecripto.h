@@ -132,8 +132,10 @@ void menu_operacoes(int idx_logado);
 void menu_adm();
 Resposta ler_admins(Admin array_admins[], int *quantidade_lida);
 Resposta registro_admin();
-Resposta salvar_adms(Admin array_admins[], int qnt_adms);
+Resposta salvar_admins(Admin array_admins[], int qnt_adms);
 Resposta excluir_adm();
-ResultadoLogin login_adm();
+Resposta login_adm();
+int selecionar_investidor();
+void operacoes_adm();
 
 #endif
