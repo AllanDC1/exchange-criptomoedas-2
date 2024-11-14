@@ -461,6 +461,7 @@ void operacoes_adm() {
             delay(1000);
             break;
         case 4:
+            excluir_cripto();
             delay(1000);
             break;
         case 5:
