@@ -253,7 +253,7 @@ void consultar_saldo(Usuario *usuario_atual) {
     printf("\nBRL: R$ %.2f\n", usuario_atual->carteira.real);
 
     for (int i = 0; i < qnt_moedas; i++) {
-        printf("%s: %4.f\n", usuario_atual->carteira.criptomoeda[i].sigla, usuario_atual->carteira.criptomoeda[i].saldo);
+        printf("%s: %4.4f\n", usuario_atual->carteira.criptomoeda[i].sigla, usuario_atual->carteira.criptomoeda[i].saldo);
     }
 
     voltar_menu();
@@ -515,7 +515,7 @@ void vender_criptomoeda(Usuario *usuario_atual) {
 
 void atualizar_cotacao() {
     Criptomoeda criptos_sistema[MAX_CRIPTOMOEDAS];
-    int qnt_moedas = 0;
+    int qnt_moedas = 0, numero_variacao;
 
     if (ler_moedas(criptos_sistema, &qnt_moedas) == FALHA) {
         print_erro("Erro ao acessar dados das moedas. Cancelando operacao...");
@@ -543,7 +543,9 @@ void atualizar_cotacao() {
     srand(time(NULL));
 
     for (int i = 0; i < qnt_moedas; i++) {
-        int numero_variacao = (rand() % 11) - 5;
+        do {
+            numero_variacao = (rand() % 11) - 5;
+        } while (numero_variacao == 0);
         float porcentagem_variacao = (float)numero_variacao / 100.0;
         
         criptos_sistema[i].cotacao *= (1 + porcentagem_variacao);
@@ -594,4 +596,100 @@ int selecionar_investidor() {
     }while (idx_selecionado == FALHA);
     
     return idx_selecionado;
+}
+
+void criar_cripto() {
+    Criptomoeda criptos_sistema[MAX_CRIPTOMOEDAS], nova_moeda;
+    Usuario usuarios[MAX_USUARIOS];
+    int qnt_usuarios = 0, qnt_moedas = 0, continuar = FALHA;
+    char entrada_sigla[TAM_SIGLA + 2];
+    float entrada_cotacao, entrada_taxa[2];
+
+    if (ler_moedas(criptos_sistema, &qnt_moedas) == FALHA) {
+        print_erro("Erro ao acessar dados das moedas. Cancelando operacao...");
+        return;
+    }
+
+    if (ler_usuarios(usuarios, &qnt_usuarios) == FALHA) {
+        print_erro("Erro ao acessar dados dos usuarios. Cancelando operacao...");
+        return;
+    }
+
+    if (qnt_moedas >= MAX_CRIPTOMOEDAS) {
+        print_erro("Limite de moedas do sistema atingido. Cancelando operacao...");
+        return;
+    }
+    
+    print_titulo("Criacao de Criptomoeda:");
+
+    do {
+        printf("\nInsira a sigla da criptomoeda: ");
+        fgets(entrada_sigla, sizeof(entrada_sigla), stdin);
+        verificar_buffer(entrada_sigla);
+        upper(entrada_sigla);
+        continuar = OK;
+
+        if (strlen(entrada_sigla) < 2 || strlen(entrada_sigla) > TAM_SIGLA - 1) {
+            print_erro("Sigla invalida, de 2 a 4 caracteres. Insira novamente.");
+            continuar = FALHA;
+        }
+
+    } while(continuar == FALHA);
+
+    do {
+        printf("\nInsira a cotacao inicial da moeda: ");
+        continuar = OK;
+        if (scanf("%f", &entrada_cotacao) != 1 || entrada_cotacao <= 0) {
+            print_erro("Cotacao invalida. Insira novamente.");
+            continuar = FALHA;
+        }
+        limpar_buffer();
+    } while(continuar == FALHA);
+
+    do {
+        printf("\nInsira a taxa de compra da moeda (em porcentagem): ");
+        continuar = OK;
+        if (scanf("%f", &entrada_taxa[0]) != 1 || entrada_taxa[0] < 0|| entrada_taxa[0] >= 100) {
+            print_erro("Taxa de compra invalida. Insira novamente.");
+            continuar = FALHA;
+        }
+        limpar_buffer();
+    } while(continuar == FALHA);
+
+    do {
+        printf("\nInsira a taxa de venda da moeda (em porcentagem): ");
+        continuar = OK;
+        if (scanf("%f", &entrada_taxa[1]) != 1 || entrada_taxa[1] < 0|| entrada_taxa[0] >= 100) {
+            print_erro("Taxa de venda invalida. Insira novamente.");
+            continuar = FALHA;
+        }
+        limpar_buffer();
+    } while(continuar == FALHA);
+
+    strcpy(nova_moeda.sigla, entrada_sigla);
+    nova_moeda.cotacao = entrada_cotacao;
+    nova_moeda.tx_compra = entrada_taxa[0] / 100;
+    nova_moeda.tx_venda = entrada_taxa[1] / 100;
+
+    criptos_sistema[qnt_moedas] = nova_moeda;
+    qnt_moedas++;   
+
+    if (salvar_moedas(criptos_sistema, qnt_moedas) == FALHA) {
+        print_erro("Erro ao salvar dados da moeda. Cancelando operacao...");
+        return;
+    }
+
+    // Adicionar a moeda na carteira de todos usarios
+    for (int i = 0; i < qnt_usuarios; i++) {
+        strcpy(usuarios[i].carteira.criptomoeda[qnt_moedas - 1].sigla, nova_moeda.sigla);  
+        usuarios[i].carteira.criptomoeda[qnt_moedas - 1].saldo = 0.0;
+    }
+
+    if (salvar_usuarios(usuarios, qnt_usuarios) == FALHA) {
+        print_erro("Erro ao salvar moeda na carteira dos usuarios. Cancelando operacao...");
+        return;
+    }
+
+    print_sucesso("\nCriptomoeda criada com sucesso!");
+    voltar_menu();
 }
