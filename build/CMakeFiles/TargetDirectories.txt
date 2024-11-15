@@ -1,0 +1,4 @@
+/workspaces/exchange-criptomoedas-2/build/CMakeFiles/rebuild_cache.dir
+/workspaces/exchange-criptomoedas-2/build/CMakeFiles/edit_cache.dir
+/workspaces/exchange-criptomoedas-2/build/CMakeFiles/exchange-admin.dir
+/workspaces/exchange-criptomoedas-2/build/CMakeFiles/exchange-investidor.dir

@@ -137,5 +137,7 @@ Resposta excluir_adm();
 Resposta login_adm();
 int selecionar_investidor();
 void operacoes_adm();
+void criar_cripto();
+void excluir_cripto();
 
 #endif

@@ -1,0 +1,44 @@
+#IncludeRegexLine: ^[ 	]*[#%][ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+/workspaces/exchange-criptomoedas-2/adm.c
+exchangecripto.h
+/workspaces/exchange-criptomoedas-2/exchangecripto.h
+
+/workspaces/exchange-criptomoedas-2/arquivo.c
+exchangecripto.h
+/workspaces/exchange-criptomoedas-2/exchangecripto.h
+
+/workspaces/exchange-criptomoedas-2/exchangecripto.h
+stdio.h
+-
+stdlib.h
+-
+string.h
+-
+stdbool.h
+-
+ctype.h
+-
+time.h
+-
+stdarg.h
+-
+windows.h
+-
+unistd.h
+-
+
+/workspaces/exchange-criptomoedas-2/functions.c
+exchangecripto.h
+/workspaces/exchange-criptomoedas-2/exchangecripto.h
+
+/workspaces/exchange-criptomoedas-2/menu.c
+exchangecripto.h
+/workspaces/exchange-criptomoedas-2/exchangecripto.h
+
