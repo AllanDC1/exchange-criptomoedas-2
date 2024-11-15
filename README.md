@@ -50,16 +50,21 @@ O sistema também conta com um módulo para administradores, que poderão execut
 - `dados-usuarios:` Arquivo em binário onde são salvos os dados, saldos e transações dos usuários. <br>
 - `dados-moedas:` Arquivo em binário com taxas de compra e venda e a cotação das criptomoedas. <br>
 - `admins.bin:` Arquivo em binário com dados dos admins registrados. <br>
-- `exchange-criptomoedas(.exe):` Arquivo que faz a execução do programa de investidor.
-- `adm-exchange(.exe):` Arquivo que faz a execução do programa de administrador.
+- `exchange-investidor(.exe):` Arquivo que faz a execução do programa de investidor.
+- `exchange-admin(.exe):` Arquivo que faz a execução do programa de administrador.
 ## Compilação e Execução
-*É necessário a instalação do [GCC](https://gcc.gnu.org/) no seu dispositivo para fazer a compilação.* <br>
+*É necessário a instalação do [GCC](https://gcc.gnu.org/) e [CMake](https://cmake.org) no seu dispositivo para fazer a compilação.* <br>
 
-Com o GCC instalado, copie e cole essa linha no seu terminal: <br>
-`gcc *.c -o exchange-criptomoedas`
-
-Agora que o executável foi criado, cole essa linha no terminal para executá-lo: <br>
-`./exchange-criptomoedas`
+### Com os programas instalados, siga as etapas no seu terminal: <br>
+- Compilar os programas:
+`make`
+- Limpar os executáveis (caso necessário):
+`make clean`
+### Com os executáveis criados: <br>
+- Executar programa de investidor:
+`./exchange-investidor`
+- Executar programa de administrador:
+`./exchange-admin`
 
 ## Guia de uso
 - Com o sistema executando no seu terminal, o menu incial já será exibido com as operações primárias. <br>
