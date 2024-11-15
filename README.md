@@ -1,10 +1,10 @@
 # Projeto 1 e 3-Exchange de Criptomoedas (2° Sem. CC FEI)
 ## Objetivo do Projeto
-Projeto desenvolvido na linguagem C, por alunos no 2° semestre do curso de Ciência da Computação da FEI. <br>
-O intuito desse projeto é exercer uma simulação de um exchange de criptomoedas, esse sistema se comporta como um sistema de banco,
+- Projeto desenvolvido na linguagem C, por alunos no 2° semestre do curso de Ciência da Computação da FEI. <br>
+- O intuito desse projeto é exercer uma simulação de um exchange de criptomoedas, esse sistema se comporta como um sistema de banco,
 onde os investidores podem fazer diversas operações financeiras, como consultar saldo, realizar depósitos, saques e transações de compra e venda de criptomoedas. <br>
 Além de um sistema de registro, login e exclusão de usuários. <br>
-O sistema também conta com um módulo para administradores, que poderão executar operações que gerenciam o sistema, como criar e excluir investidores e criptomoedas.
+- O sistema também conta com um módulo para administradores, que poderão executar operações que gerenciam o sistema, como criar e excluir investidores e criptomoedas.
 
 ## Funcionalidades para Investidores
 ### Menu inicial
