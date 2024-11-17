@@ -1,1 +1,0 @@
-/usr/bin/cc    CMakeFiles/admin.dir/adm.c.o CMakeFiles/admin.dir/menu.c.o CMakeFiles/admin.dir/arquivo.c.o CMakeFiles/admin.dir/functions.c.o  -o admin 
