@@ -736,6 +736,8 @@ void excluir_cripto() {
 
     } while(idx_escolhido == FALHA);    
 
+    print_titulo("\nDados da moeda:");
+
     printf("\nSigla: %s\n", criptos_sistema[idx_escolhido].sigla);
     printf("Cotacao: %.2f\n", criptos_sistema[idx_escolhido].cotacao);
     printf("Taxa de compra: %.2f\n", criptos_sistema[idx_escolhido].tx_compra);
@@ -759,20 +761,20 @@ void excluir_cripto() {
         }
 
         if (salvar_moedas(criptos_sistema, qnt_moedas) == FALHA) {
-            print_erro("Erro ao salvar dados das moedas. Cancelando operacao...");
+            print_erro("\nErro ao salvar dados das moedas. Cancelando operacao...");
             return;
         }
 
         if (salvar_usuarios(usuarios, qnt_usuarios) == FALHA) {
-            print_erro("Erro ao salvar dados dos usuarios. Cancelando operacao...");
+            print_erro("\nErro ao salvar dados dos usuarios. Cancelando operacao...");
             return;
         }
 
-        print_sucesso("Exclusao concluida.");
+        print_sucesso("\nExclusao concluida.");
         voltar_menu();
         return;
     }else {
-        print_erro("Exclusao da moeda cancelada. Voltando ao menu...");
+        print_erro("\nExclusao da moeda cancelada. Voltando ao menu...");
         return;
     }
 }

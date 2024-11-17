@@ -136,6 +136,7 @@ Resposta salvar_admins(Admin array_admins[], int qnt_adms);
 Resposta excluir_adm();
 Resposta login_adm();
 int selecionar_investidor();
+void exibir_operacoes_adm();
 void operacoes_adm();
 void criar_cripto();
 void excluir_cripto();
