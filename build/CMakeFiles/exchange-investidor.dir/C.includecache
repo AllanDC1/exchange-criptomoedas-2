@@ -6,10 +6,6 @@
 
 #IncludeRegexTransform: 
 
-/workspaces/exchange-criptomoedas-2/arquivo.c
-exchangecripto.h
-/workspaces/exchange-criptomoedas-2/exchangecripto.h
-
 /workspaces/exchange-criptomoedas-2/exchangecripto.h
 stdio.h
 -
@@ -29,14 +25,6 @@ windows.h
 -
 unistd.h
 -
-
-/workspaces/exchange-criptomoedas-2/functions.c
-exchangecripto.h
-/workspaces/exchange-criptomoedas-2/exchangecripto.h
-
-/workspaces/exchange-criptomoedas-2/main.c
-exchangecripto.h
-/workspaces/exchange-criptomoedas-2/exchangecripto.h
 
 /workspaces/exchange-criptomoedas-2/menu.c
 exchangecripto.h

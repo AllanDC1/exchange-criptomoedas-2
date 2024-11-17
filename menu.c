@@ -165,6 +165,11 @@ Resposta excluir_usuario() {
         }        
     }while (excluir_idx == FALHA);
 
+    print_titulo("\nDados da conta:");
+
+    printf("\nNome: %s\n", usuarios[excluir_idx].nome);
+    printf("CPF: %s\n", usuarios[excluir_idx].cpf);
+
     printf("\nDeseja realmente excluir a conta de \033[0;35m%s\033[0m?\n", usuarios[excluir_idx].nome);
     
     if (confirmar_acao() == OK) {
@@ -174,12 +179,12 @@ Resposta excluir_usuario() {
         qnt_usuarios--;
 
         if (salvar_usuarios(usuarios, qnt_usuarios) == FALHA) {
-            print_erro("Erro ao salvar os dados do usuario. Cancelando operacao...");
+            print_erro("\nErro ao salvar os dados do usuario. Cancelando operacao...");
             return FALHA; // voltar pro menu
         }
         return OK;
     }else {
-        print_erro("Exclusao de conta cancelada. Voltando ao menu...");
+        print_erro("\nExclusao de conta cancelada. Voltando ao menu...");
         return FALHA;
     }
 }
