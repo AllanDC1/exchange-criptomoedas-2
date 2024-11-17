@@ -56,11 +56,15 @@ Além de um sistema de registro, login e exclusão de usuários. <br>
 *É necessário a instalação do [GCC](https://gcc.gnu.org/) e [CMake](https://cmake.org) no seu dispositivo para fazer a compilação.* <br>
 
 ### Com os programas instalados, siga as etapas no seu terminal: <br>
-- Ir para o diretório build:
+- Criar o diretório build (se necessário): <br>
+`mkdir build`
+- Ir para o diretório build: <br>
 `cd build`
-- Compilar os programas:
+- Gerar arquivos CMake: <br>
+`cmake ..`
+- Compilar os programas: <br>
 `make`
-- Limpar os executáveis (caso necessário):
+- Limpar os executáveis (se necessário): <br>
 `make clean`
 ### Com os executáveis criados: <br>
 - Executar programa de investidor:
