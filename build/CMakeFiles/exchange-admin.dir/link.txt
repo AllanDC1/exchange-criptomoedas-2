@@ -1,1 +1,0 @@
-/usr/bin/cc    CMakeFiles/exchange-admin.dir/adm.c.o CMakeFiles/exchange-admin.dir/menu.c.o CMakeFiles/exchange-admin.dir/arquivo.c.o CMakeFiles/exchange-admin.dir/functions.c.o  -o exchange-admin 
